@@ -112,8 +112,10 @@ The dependency direction is stable and one-way. Reverse imports are architectura
 
 - `npm test` runs architecture guards and support guardrails locally; the three explicit acceptance baselines skip unless the Blender adapter environment variables are configured.
 - `npm run test:real` is the dedicated entrypoint for the real-environment explicit baselines and now launches the repository-local Blender and disconnect adapter scripts automatically.
+- `npm run observe:blender` is a parallel human-observation entrypoint that opens Blender with a visible scene annotation path and replays a short state sequence without changing the frozen explicit baselines.
 - Positive real-environment baselines currently pass against the local Blender installation discovered on this machine.
 - The explicit graceful-degradation baseline now passes through the repository-local disconnect adapter without additional manual setup.
 - Optional override environment for positive real-environment baselines: `BLENDER_EXECUTABLE`, `BLENDER_ADAPTER_TIMEOUT_MS`, and `BLENDER_WORKING_DIRECTORY`.
+- Optional environment for visual observation: `BLENDER_VISUAL_BLEND_FILE`, `BLENDER_VISUAL_TIMEOUT_MS`, `AUTO_SKEPTURE_VISUAL_HOLD_SECONDS`, and `BLENDER_VISUAL_FACTORY_STARTUP=0` when the chosen `.blend` file should remain untouched by factory startup.
 - Advanced adapter override environment remains available: `BLENDER_ADAPTER_COMMAND`, with optional `BLENDER_ADAPTER_ARGS`, `BLENDER_ADAPTER_CWD`, and `BLENDER_ADAPTER_TIMEOUT_MS`.
 - Optional environment for the explicit degradation baseline: `BLENDER_ADAPTER_DISCONNECT_COMMAND`, `BLENDER_ADAPTER_DISCONNECT_ARGS`, and `BLENDER_ADAPTER_DISCONNECT_CWD`.

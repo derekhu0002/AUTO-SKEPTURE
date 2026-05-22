@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "tsx --test tests/**/*.test.ts",
-    "test:real": "node scripts/run-real-tests.mjs"
+    "test:real": "node scripts/run-real-tests.mjs",
+    "observe:blender": "node scripts/observe-in-blender.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.15.30",

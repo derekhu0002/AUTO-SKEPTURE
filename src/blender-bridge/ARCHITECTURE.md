@@ -24,9 +24,12 @@
 ## Repository Launch Assets
 
 - `scripts/blender-adapter.mjs`
+- `scripts/blender-visual-adapter.mjs`
 - `scripts/blender-disconnect-adapter.mjs`
 - `scripts/blender-avatar-driver.py`
+- `scripts/blender-visual-driver.py`
 - `scripts/run-real-tests.mjs`
+- `scripts/observe-in-blender.mjs`
 
 ## Dependency Rules
 
