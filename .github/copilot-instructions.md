@@ -98,11 +98,13 @@ When repository evidence conflicts, resolve it in this order:
 - Focus on high-level stable elements such as stable directories, stable components, key entry files, interface boundaries, dependency direction, test ownership, and traceability.
 - Do not degrade into file-by-file or function-by-function mirroring.
 - This stage converts intent-side explicit testcases into physical read-only entrypoints plus critical and supporting non-explicit test guardrails in the repository.
+- This stage must generate executable testcase assets that are intentionally allowed and, when implementation is still missing, expected to fail for the right reason; these expected-failing results are a required handoff input to the Coding/Repair stage rather than a sign that implementation design is incomplete.
 - When designing any testcase in this stage, explicitly record the testcase control point and observation point alongside its ownership, entrypoint, and guardrail role.
 
 ### Coding And Repair Stage
 
 - Respect the frozen and evolvable test assets defined in Test Semantics and in the implementation contracts.
+- Treat expected-failing testcase assets produced during implementation architecture design as the primary repair queue: coding work should make those existing tests pass by completing or repairing implementation, not by weakening or redesigning the tests.
 - During coding, validate by invoking existing testcase entrypoints rather than rewriting them.
 - When adding or refining supporting non-explicit tests in coding mode, keep the control point and observation point explicit in the test design and in any task summary.
 
@@ -112,12 +114,14 @@ When repository evidence conflicts, resolve it in this order:
 
 - Explicit testcases are the stable acceptance or scenario baseline declared by intent architecture.
 - Their target, scope, assertion boundary, and physical single entrypoint are not to be rewritten during ordinary coding.
+- During implementation architecture design, the physical entry for each explicit testcase must be executable and should fail when the required implementation is still absent or incorrect; that expected failure is the intended signal handed to Coding/Repair.
 - Every explicit testcase design must explicitly describe its control point and observation point. The control point is the trigger, input, setup, or executable entry that drives the behavior under test. The observation point is the externally observable output, state, artifact, log, error, or effect that the testcase asserts.
 - If an explicit testcase is missing a physical entrypoint, report it as an implementation architecture design gap rather than patching around it silently in coding mode.
 
 ### Non-Explicit Tests
 
 - Non-explicit tests belong to the implementation layer rather than the intent layer.
+- During implementation architecture design, supporting and critical non-explicit tests that are needed to drive later coding should likewise be executable and may deliberately fail until the corresponding implementation is completed; do not convert missing implementation into placeholder passing assertions.
 - Every non-explicit test design must also explicitly describe its control point and observation point; a testcase definition without both is incomplete.
 - Critical non-explicit tests are limited to four categories:
   - architecture boundary guards
@@ -131,8 +135,8 @@ When repository evidence conflicts, resolve it in this order:
 ## Control Loop Semantics
 
 - Intent architecture design updates intent.
-- Implementation architecture design updates implementation contracts and testcase ownership.
-- Coding realizes implementation architecture.
+- Implementation architecture design updates implementation contracts, testcase ownership, and executable expected-failing test assets that define the next coding target.
+- Coding realizes implementation architecture by making those predesigned tests pass without redefining their acceptance boundary.
 - Automated testing produces failure records that feed repair without redefining the upstream baselines.
 
 ## Architecture Design Principles
@@ -166,57 +170,3 @@ When designing or changing implementation architecture:
 
 
 ## Session Memory
-### Current Stage
-Coding/Repair
-
-### Targets
-1. 基于当前仓库中已经落盘的失败测试记录，修复实现，使失败记录对应的问题被解决。
-2. 若实现偏离意图架构或实现架构契约，先把实现拉回既定架构，再补充必要实现或支撑测试。
-3. 完成修复后，重新执行失败记录中 `acceptanceCriteria` 指向的既有测试入口，直到这些失败全部通过。
-
-### Evidence
-- 意图架构图谱：d:\Projects\AUTO-SKEPTURE\design\KG\SystemArchitecture.json
-- 失败测试记录：d:\Projects\AUTO-SKEPTURE\design\KG\test-failure-records.json
-- 实现架构根契约：#file:OVERALL_ARCHITECTURE.md
-- 相关局部契约：受失败记录影响路径下的 ARCHITECTURE.md
-
-### Problem List
-- 当前失败记录文件为空；如果仓库现状与此不符，应先明确说明记录为空这一事实，再决定是否需要让用户先执行 /test 刷新记录。
-
-### Operational Rules
-1. 先按仓库常驻架构知识读取并遵守意图架构、实现架构契约与阶段边界。
-2. 以失败记录作为唯一待修复清单，直接修改当前工作区代码，而不是只给建议。
-3. 严禁把测试桩、测试分支、测试开关、仅供断言使用的返回字段、测试专用后门或任何其他测试内容混入业务代码；测试相关内容只能放在契约允许的测试、夹具或环境资产里。
-4. 只要涉及测试用例，无论是读取失败记录、补齐普通非显性测试，还是说明测试修复方案，都必须显性描述“控制点”和“观测点”；缺少任一项都视为测试设计不完整。
-5. 如果发现缺失显性测试入口、关键非显性测试契约错误、关键护栏失效且必须改写，或测试环境信息只能通过改写冻结资产才能补齐，请将其视为实现架构设计阶段缺口并明确回报，不要在编码阶段直接改写这些冻结资产。
-6. 如新增或调整外部接口，必须同步更新项目根目录的 INTRODUCTION.md，确保对外说明与真实接口一致。
-
-### Required Response
-   - 读取了哪些契约文件（OVERALL_ARCHITECTURE.md 与哪些 ARCHITECTURE.md）
-   - 修改了哪些代码
-   - 新增或更新了哪些内外部接口
-   - INTRODUCTION.md 刷新了哪些外部接口信息
-   - 新增或回填了哪些普通非显性测试，以及每条测试的控制点与观测点
-   - 读取了哪些关键非显性测试但保持未修改
-   - 参考了哪些普通非显性测试
-   - 当前测试执行结果
-   - 你是从架构图谱和仓库上下文中如何识别并搭建测试环境的
-
-### Extra Context
-What to do next:
-
-- Preserve the now-normalized intent graph and frozen implementation contracts, then continue implementation work in the existing runtime/mediator/bridge stack.
-- Prioritize the remaining behavior gaps that are already implied by the contracts and tests: real Blender rig-driving beyond acknowledgement-only behavior, and the unfinished preemption support path, without rewriting the explicit testcase baselines or their entrypoints.
-- Validate against the existing explicit real-environment tests and frozen architecture guardrails after each change.
-
-Read first:
-
-- [SystemArchitecture.json](vscode-file://vscode-app/c:/Users/admin/AppData/Local/Programs/Microsoft%20VS%20Code/f6cfa2ea24/resources/app/out/vs/code/electron-browser/workbench/workbench.html)
-- [OVERALL_ARCHITECTURE.md](vscode-file://vscode-app/c:/Users/admin/AppData/Local/Programs/Microsoft%20VS%20Code/f6cfa2ea24/resources/app/out/vs/code/electron-browser/workbench/workbench.html)
-- [ARCHITECTURE.md](vscode-file://vscode-app/c:/Users/admin/AppData/Local/Programs/Microsoft%20VS%20Code/f6cfa2ea24/resources/app/out/vs/code/electron-browser/workbench/workbench.html)
-- [ARCHITECTURE.md](vscode-file://vscode-app/c:/Users/admin/AppData/Local/Programs/Microsoft%20VS%20Code/f6cfa2ea24/resources/app/out/vs/code/electron-browser/workbench/workbench.html)
-- [ARCHITECTURE.md](vscode-file://vscode-app/c:/Users/admin/AppData/Local/Programs/Microsoft%20VS%20Code/f6cfa2ea24/resources/app/out/vs/code/electron-browser/workbench/workbench.html)
-- [ARCHITECTURE.md](vscode-file://vscode-app/c:/Users/admin/AppData/Local/Programs/Microsoft%20VS%20Code/f6cfa2ea24/resources/app/out/vs/code/electron-browser/workbench/workbench.html)
-- [response-start-embodiment.test.ts](vscode-file://vscode-app/c:/Users/admin/AppData/Local/Programs/Microsoft%20VS%20Code/f6cfa2ea24/resources/app/out/vs/code/electron-browser/workbench/workbench.html)
-- [response-complete-embodiment.test.ts](vscode-file://vscode-app/c:/Users/admin/AppData/Local/Programs/Microsoft%20VS%20Code/f6cfa2ea24/resources/app/out/vs/code/electron-browser/workbench/workbench.html)
-- [blender-disconnect-graceful-degradation.test.ts](vscode-file://vscode-app/c:/Users/admin/AppData/Local/Programs/Microsoft%20VS%20Code/f6cfa2ea24/resources/app/out/vs/code/electron-browser/workbench/workbench.html)
