@@ -1,0 +1,169 @@
+{
+  "stage": "implementation-to-coding",
+  "generatedAt": "2026-05-22",
+  "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
+  "summary": "Implementation architecture remains layered as src/agent-runtime -> src/avatar-mediator -> src/blender-bridge -> tests. The current Sprite iteration is frozen as bridge-owned, visual-path-first work: explicit semantic acceptance baselines remain read-only and passed on first execution, while two new support guardrails intentionally fail until Coding/Repair binds assets/sprite.blend as the default observation scene and emits richer Sprite selection detail inside the existing BlenderFeedback.detail field.",
+  "implementationContracts": [
+    "OVERALL_ARCHITECTURE.md",
+    "src/agent-runtime/ARCHITECTURE.md",
+    "src/avatar-mediator/ARCHITECTURE.md",
+    "src/blender-bridge/ARCHITECTURE.md",
+    "tests/ARCHITECTURE.md"
+  ],
+  "explicitEntrypoints": [
+    {
+      "testcaseName": "TC-EX-001 ResponseStartEmbodiment",
+      "entryPath": "scripts/run-tc-ex-001.mjs",
+      "controlPoint": "AgentRuntime.handleResponseLifecycle({ type: \"response_start\" }) via tests/explicit/response-start-embodiment.test.ts.",
+      "observationPoint": "Mediator outcome and structured Blender feedback expose a thinking-compatible state through the frozen explicit baseline.",
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "npm run test:real"
+    },
+    {
+      "testcaseName": "TC-EX-002 ResponseCompleteEmbodiment",
+      "entryPath": "scripts/run-tc-ex-002.mjs",
+      "controlPoint": "AgentRuntime.handleResponseLifecycle({ type: \"response_complete\" }) via tests/explicit/response-complete-embodiment.test.ts.",
+      "observationPoint": "Mediator outcome and structured Blender feedback expose a confirming-compatible state through the frozen explicit baseline.",
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "npm run test:real"
+    },
+    {
+      "testcaseName": "TC-EX-003 BlenderDisconnectGracefulDegradation",
+      "entryPath": "scripts/run-tc-ex-003.mjs",
+      "controlPoint": "AvatarEmbodimentMediator.executeAction(action, requestId) against the configured disconnect path via tests/explicit/blender-disconnect-graceful-degradation.test.ts.",
+      "observationPoint": "Mediator outcome surfaces degraded status and neutral-idle recovery through the frozen explicit baseline.",
+      "initialExecutionStatus": "passed",
+      "initialExecutionCommand": "npm run test:real"
+    }
+  ],
+  "criticalNonExplicitTests": [
+    {
+      "name": "architecture boundary guard",
+      "path": "tests/architecture/boundary-guard.test.ts",
+      "kind": "architecture boundary guard",
+      "controlPoint": "Read src/agent-runtime/index.ts import surface.",
+      "observationPoint": "No direct import from src/blender-bridge appears in the runtime layer.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "dependency direction guard",
+      "path": "tests/architecture/dependency-direction-guard.test.ts",
+      "kind": "dependency direction guard",
+      "controlPoint": "Read src/blender-bridge/index.ts and src/avatar-mediator/index.ts import surfaces.",
+      "observationPoint": "Bridge has no reverse import to runtime or mediator, and mediator imports the bridge contract only.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "explicit entrypoint correctness guard",
+      "path": "tests/architecture/explicit-entrypoint-guard.test.ts",
+      "kind": "explicit entrypoint correctness guard",
+      "controlPoint": "Resolve explicit testcase files and protected baseline fixture keys.",
+      "observationPoint": "All three explicit test entrypoints and their baseline metadata exist in the repository.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "traceability guard",
+      "path": "tests/architecture/traceability-guard.test.ts",
+      "kind": "key implementation traceability guard",
+      "controlPoint": "Read OVERALL_ARCHITECTURE.md and local ARCHITECTURE.md contracts.",
+      "observationPoint": "Contracts mention the intended stable elements, explicit testcase entrypoints, intent element mappings, and bridge-owned Sprite observation binding.",
+      "expectedStatus": "passed"
+    }
+  ],
+  "supportingNonExplicitTests": [
+    {
+      "name": "acceptance criteria script path guard",
+      "path": "tests/support/acceptance-criteria-script-path.test.ts",
+      "kind": "supporting guardrail",
+      "controlPoint": "Read explicit testcase acceptanceCriteria values from design/KG/SystemArchitecture.json.",
+      "observationPoint": "Each explicit testcase points to an existing single executable script file accepted by the failure-record consumer.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "avatar mute override guard",
+      "path": "tests/support/avatar-mute-override.test.ts",
+      "kind": "supporting guardrail",
+      "controlPoint": "AgentRuntime.setAvatarMuted(true) followed by response_start.",
+      "observationPoint": "The mediator suppresses avatar execution while keeping the runtime control-loop callable.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "lifecycle mapping contract",
+      "path": "tests/support/lifecycle-mapping-contract.test.ts",
+      "kind": "supporting guardrail",
+      "controlPoint": "Deliver response_start and response_complete events through AgentRuntime against a recording bridge.",
+      "observationPoint": "The runtime and mediator map lifecycle events to thinking and confirming semantic actions.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "structured feedback fixture shape",
+      "path": "tests/support/structured-feedback-fixture.test.ts",
+      "kind": "supporting guardrail",
+      "controlPoint": "Create the shared structured feedback fixture.",
+      "observationPoint": "The fixture exposes acknowledgement, status, observedState, and detail fields.",
+      "expectedStatus": "passed"
+    },
+    {
+      "name": "preemption policy guardrail",
+      "path": "tests/support/preemption-policy.test.ts",
+      "kind": "supporting guardrail",
+      "controlPoint": "Deliver two rapid lifecycle events to the mediator before the earlier avatar motion completes.",
+      "observationPoint": "The newest semantic action wins and stale motion does not remain the visible outcome."
+    },
+    {
+      "name": "sprite visual scene binding",
+      "path": "tests/support/sprite-visual-scene-binding.test.ts",
+      "kind": "supporting guardrail",
+      "controlPoint": "Read scripts/blender-visual-adapter.mjs to inspect the default visual-scene binding contract.",
+      "observationPoint": "The observation path defaults to assets/sprite.blend for this iteration while preserving explicit override via BLENDER_VISUAL_BLEND_FILE.",
+      "expectedStatus": "failed"
+    },
+    {
+      "name": "sprite feedback detail contract",
+      "path": "tests/support/sprite-feedback-detail-contract.test.ts",
+      "kind": "supporting guardrail",
+      "controlPoint": "Read scripts/blender-visual-driver.py to inspect how Sprite observation detail is emitted.",
+      "observationPoint": "The existing response shape is preserved, and the detail string names the selected Sprite preset, action family, or equivalent bridge-owned selection detail.",
+      "expectedStatus": "failed"
+    }
+  ],
+  "expectedFailureRecordsPath": "design/KG/test-failure-records.json",
+  "codingTargets": [
+    {
+      "testcaseName": "support guardrail: visual observation path defaults to the Sprite scene",
+      "path": "tests/support/sprite-visual-scene-binding.test.ts",
+      "failureSignal": "scripts/blender-visual-adapter.mjs still falls back to --factory-startup instead of binding assets/sprite.blend as the default observation scene.",
+      "nextAction": "Bind assets/sprite.blend as the default observation scene inside scripts/blender-visual-adapter.mjs while preserving BLENDER_VISUAL_BLEND_FILE as an explicit override."
+    },
+    {
+      "testcaseName": "support guardrail: visual driver detail names the Sprite-specific selection",
+      "path": "tests/support/sprite-feedback-detail-contract.test.ts",
+      "failureSignal": "scripts/blender-visual-driver.py still reports only generic visual rendering detail and does not name the selected Sprite preset or action family.",
+      "nextAction": "Implement Sprite-specific preset selection and emit that selection through the existing detail field in scripts/blender-visual-driver.py."
+    }
+  ],
+  "frozenFiles": [
+    "OVERALL_ARCHITECTURE.md",
+    "src/agent-runtime/ARCHITECTURE.md",
+    "src/avatar-mediator/ARCHITECTURE.md",
+    "src/blender-bridge/ARCHITECTURE.md",
+    "tests/ARCHITECTURE.md",
+    "tests/fixtures/explicit-baselines.ts",
+    "tests/explicit/response-start-embodiment.test.ts",
+    "tests/explicit/response-complete-embodiment.test.ts",
+    "tests/explicit/blender-disconnect-graceful-degradation.test.ts",
+    "scripts/run-tc-ex-001.mjs",
+    "scripts/run-tc-ex-002.mjs",
+    "scripts/run-tc-ex-003.mjs",
+    "tests/architecture/boundary-guard.test.ts",
+    "tests/architecture/dependency-direction-guard.test.ts",
+    "tests/architecture/explicit-entrypoint-guard.test.ts",
+    "tests/architecture/traceability-guard.test.ts"
+  ],
+  "openGaps": [
+    "scripts/blender-visual-adapter.mjs does not yet default the observation path to assets/sprite.blend.",
+    "scripts/blender-visual-driver.py does not yet emit selected Sprite preset or action-family detail in BlenderFeedback.detail.",
+    "tests/support/preemption-policy.test.ts remains a todo support guardrail rather than an implemented executable check.",
+    "package.json does not define npm run validate:handoff:implementation, so formal implementation-handoff validation is currently blocked by repository tooling."
+  ]
+}

@@ -6,7 +6,7 @@ Implementation Design
 
 ## Scope
 
-This contract realizes the intent graph in `design/KG/SystemArchitecture.json` for the first embodied-agent baseline: a VS Code-local agent runtime drives a bounded avatar embodiment mediator, which in turn drives a local Blender bridge over a stdio JSON boundary.
+This contract realizes the intent graph in `design/KG/SystemArchitecture.json` for the first embodied-agent baseline and the current Sprite observation iteration: a VS Code-local agent runtime drives a bounded avatar embodiment mediator, which in turn drives a local Blender bridge over a stdio JSON boundary.
 
 ## Stable Elements
 
@@ -21,6 +21,7 @@ This contract realizes the intent graph in `design/KG/SystemArchitecture.json` f
 ### `src/avatar-mediator`
 
 - Responsibility: own truthful, policy-bounded mapping from agent lifecycle state to semantic avatar actions and graceful degradation semantics.
+- Responsibility: keep Sprite asset names, rig names, and preset selection out of the runtime-facing semantic contract.
 - Directly implements: `AvatarEmbodimentMediator`, `ApprovedAvatarActionVocabulary`, `TruthfulEmbodimentPrinciple`, `GracefulAvatarDegradationConstraint`, `UserAvatarOverrideConstraint`.
 - Indirectly carries: `EmbodiedAgentInteraction` via the runtime control loop.
 - May depend on: `src/blender-bridge` contract surface only.
@@ -29,6 +30,8 @@ This contract realizes the intent graph in `design/KG/SystemArchitecture.json` f
 ### `src/blender-bridge`
 
 - Responsibility: own the local stdio JSON integration boundary and structured execution feedback contract for Blender.
+- Responsibility: own fixed-scene Sprite observation binding for `npm run observe:blender`, including the current iteration's `assets/sprite.blend` default target.
+- Responsibility: own Sprite preset selection and rig-specific control logic inside Blender-side assets while preserving the existing `BlenderFeedback` field shape.
 - Directly implements: `LocalBlenderAvatarEndpoint`, `StructuredAvatarExecutionFeedback`.
 - May depend on: Node runtime/process primitives.
 - Must not depend on: `src/agent-runtime` or `src/avatar-mediator`.
@@ -45,6 +48,13 @@ This contract realizes the intent graph in `design/KG/SystemArchitecture.json` f
 `src/agent-runtime` -> `src/avatar-mediator` -> `src/blender-bridge`
 
 The dependency direction is stable and one-way. Reverse imports are architectural drift.
+
+For the current Sprite iteration, ownership is additionally frozen as follows:
+
+- `src/agent-runtime` owns lifecycle triggers only.
+- `src/avatar-mediator` owns semantic action selection only.
+- `src/blender-bridge` and its Blender-side assets own fixed-scene binding, Sprite preset selection, and richer observation detail formatting.
+- The headless explicit acceptance path remains semantically equivalent and read-only; Sprite-specific visual work lands on the observation path first.
 
 ## Explicit Testcase Ownership
 
@@ -92,7 +102,7 @@ The dependency direction is stable and one-way. Reverse imports are architectura
 ### Key implementation traceability guards
 
 - Entry point: `tests/architecture/traceability-guard.test.ts`
-- Protects: contract-to-intent mappings and testcase ownership references.
+- Protects: contract-to-intent mappings, testcase ownership references, and bridge ownership of Sprite observation binding under `assets/sprite.blend`.
 
 ## Supporting Non-Explicit Guardrails
 
@@ -108,6 +118,12 @@ The dependency direction is stable and one-way. Reverse imports are architectura
 - Entry point: `tests/support/preemption-policy.test.ts`
 - Purpose: reserve the newest-state-wins guardrail at the mediator boundary for later coding work.
 
+- Entry point: `tests/support/sprite-visual-scene-binding.test.ts`
+- Purpose: intentionally fail until the visual observation path defaults to `assets/sprite.blend` while still allowing explicit override.
+
+- Entry point: `tests/support/sprite-feedback-detail-contract.test.ts`
+- Purpose: intentionally fail until the visual Blender feedback detail reports which Sprite preset or action family was selected without expanding the bridge protocol shape.
+
 ## Current Expected Execution State
 
 - `npm test` runs architecture guards and support guardrails locally; the three explicit acceptance baselines skip unless the Blender adapter environment variables are configured.
@@ -115,6 +131,8 @@ The dependency direction is stable and one-way. Reverse imports are architectura
 - `npm run observe:blender` is a parallel human-observation entrypoint that opens Blender with a visible scene annotation path and replays a short state sequence without changing the frozen explicit baselines.
 - Positive real-environment baselines currently pass against the local Blender installation discovered on this machine.
 - The explicit graceful-degradation baseline now passes through the repository-local disconnect adapter without additional manual setup.
+- The current Sprite implementation queue is intentionally carried by support guardrails rather than by modifying the explicit acceptance baselines.
+- Until Coding/Repair completes the Sprite observation work, `tests/support/sprite-visual-scene-binding.test.ts` and `tests/support/sprite-feedback-detail-contract.test.ts` are expected to fail and therefore keep `npm test` red for the right reason.
 - Optional override environment for positive real-environment baselines: `BLENDER_EXECUTABLE`, `BLENDER_ADAPTER_TIMEOUT_MS`, and `BLENDER_WORKING_DIRECTORY`.
 - Optional environment for visual observation: `BLENDER_VISUAL_BLEND_FILE`, `BLENDER_VISUAL_TIMEOUT_MS`, `AUTO_SKEPTURE_VISUAL_HOLD_SECONDS`, and `BLENDER_VISUAL_FACTORY_STARTUP=0` when the chosen `.blend` file should remain untouched by factory startup.
 - Advanced adapter override environment remains available: `BLENDER_ADAPTER_COMMAND`, with optional `BLENDER_ADAPTER_ARGS`, `BLENDER_ADAPTER_CWD`, and `BLENDER_ADAPTER_TIMEOUT_MS`.

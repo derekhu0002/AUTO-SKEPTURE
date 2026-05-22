@@ -1,0 +1,78 @@
+{
+  "stage": "intent-to-implementation",
+  "generatedAt": "2026-05-22",
+  "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
+  "summary": "No intent graph redesign is required for the Sprite avatar iteration. The existing intent already fixes the semantic action boundary, truthful embodiment principle, graceful degradation requirement, mute override requirement, local Blender endpoint, and structured feedback observation boundary. The next stage should update implementation contracts to bind the current iteration to assets/sprite.blend and keep Sprite rig details isolated inside Blender-side implementation assets.",
+  "intentElementIds": [
+    "1300",
+    "1301",
+    "1302",
+    "1303",
+    "1304",
+    "1305",
+    "1306",
+    "1307",
+    "1309",
+    "1310"
+  ],
+  "explicitTestcases": [
+    {
+      "name": "TC-EX-001 ResponseStartEmbodiment",
+      "mountedElementId": "1300",
+      "mountedElementName": "EmbodiedAgentInteraction",
+      "type": "Acceptance Test",
+      "controlPoint": "AgentResponseLifecycleState drives AvatarEmbodimentMediator during response-start so the mediator selects a bounded semantic avatar action from the approved vocabulary.",
+      "observationPoint": "Structured Blender feedback acknowledges delivery and reports a resulting thinking-compatible or acknowledging-compatible state transition for the targeted avatar channel.",
+      "acceptanceBoundary": "Keep the explicit baseline semantic, truthful, and vocabulary-bounded. Do not replace the acceptance target with Sprite-specific rig names, raw actions, shape keys, or human-observation-only assertions.",
+      "requiredEntryKind": "explicit-testcase-entry",
+      "implementationNotes": "Implementation may enrich structured feedback detail for the selected Sprite preset, but the explicit acceptance boundary remains semantic rather than rig-specific."
+    },
+    {
+      "name": "TC-EX-002 ResponseCompleteEmbodiment",
+      "mountedElementId": "1300",
+      "mountedElementName": "EmbodiedAgentInteraction",
+      "type": "Acceptance Test",
+      "controlPoint": "AgentResponseLifecycleState drives AvatarEmbodimentMediator during response-complete so the mediator selects a bounded confirming or settling action and preempts stale prior state.",
+      "observationPoint": "Structured Blender feedback acknowledges delivery and reports a resulting confirming-compatible or settling-compatible state transition for the targeted avatar channel.",
+      "acceptanceBoundary": "Keep the explicit baseline focused on truthful completion semantics, approved vocabulary, and newest-state-wins behavior. Do not rewrite it into a Sprite asset selection test.",
+      "requiredEntryKind": "explicit-testcase-entry",
+      "implementationNotes": "If Sprite-specific detail is surfaced, treat it as supporting observation detail rather than the acceptance target itself."
+    },
+    {
+      "name": "TC-EX-003 BlenderDisconnectGracefulDegradation",
+      "mountedElementId": "1300",
+      "mountedElementName": "EmbodiedAgentInteraction",
+      "type": "Acceptance Test",
+      "controlPoint": "AvatarEmbodimentMediator executes a semantic avatar action against LocalBlenderAvatarEndpoint while the endpoint is unavailable, disconnected, or rejecting commands.",
+      "observationPoint": "Structured feedback or surfaced status reports degraded avatar delivery while the assistant loop continues and recovery semantics move back toward neutral idle.",
+      "acceptanceBoundary": "Keep graceful degradation, surfaced status, and neutral-idle recovery as the acceptance target. Sprite-specific binding failure must diagnose cleanly without weakening this baseline.",
+      "requiredEntryKind": "explicit-testcase-entry",
+      "implementationNotes": "Any fixed-scene or rig-selection logic introduced for Sprite must still fail safely and preserve the existing degradation baseline."
+    }
+  ],
+  "frozenBaselines": [
+    "design/KG/SystemArchitecture.json",
+    "tests/fixtures/explicit-baselines.ts",
+    "tests/explicit/response-start-embodiment.test.ts",
+    "tests/explicit/response-complete-embodiment.test.ts",
+    "tests/explicit/blender-disconnect-graceful-degradation.test.ts",
+    "scripts/run-tc-ex-001.mjs",
+    "scripts/run-tc-ex-002.mjs",
+    "scripts/run-tc-ex-003.mjs"
+  ],
+  "requiredImplementationArtifacts": [
+    "OVERALL_ARCHITECTURE.md",
+    "src/avatar-mediator/ARCHITECTURE.md",
+    "src/blender-bridge/ARCHITECTURE.md",
+    "tests/ARCHITECTURE.md",
+    "design/KG/ImplementationToCodingHandoff.json"
+  ],
+  "notes": [
+    "Repository-confirmed conclusion: the Sprite iteration fits inside the existing semantic action vocabulary and intent constraints.",
+    "Repository-confirmed conclusion: the stable dependency direction remains src/agent-runtime -> src/avatar-mediator -> src/blender-bridge and should not change for Sprite-specific work.",
+    "User-confirmed decision: keep assets/sprite.blend, candidate Sprite rig selection, and raw Sprite action names out of intent architecture and inside implementation contracts and Blender-side assets only.",
+    "User-confirmed decision: keep explicit acceptance baselines semantic and vocabulary-bounded rather than Sprite-asset-specific.",
+    "User-confirmed decision: require richer structured feedback detail at implementation level so the selected Sprite preset or action can be diagnosed without changing the intent-side acceptance boundary.",
+    "Minimal assumption: implementation architecture will need to localize fixed-scene binding and richer observation detail under the blender-bridge-owned boundary before Coding/Repair begins."
+  ]
+}

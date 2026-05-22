@@ -5,7 +5,7 @@ import { readFile } from "node:fs/promises";
 test("traceability guard: contracts map stable elements to intent and tests", async () => {
   const controlPoint = "Read OVERALL_ARCHITECTURE.md and local ARCHITECTURE.md contracts.";
   const observationPoint =
-    "Contracts mention the intended stable elements, explicit testcase entrypoints, and intent element mappings.";
+    "Contracts mention the intended stable elements, explicit testcase entrypoints, intent element mappings, and bridge-owned Sprite observation binding.";
   const overall = await readFile(
     new URL("../../OVERALL_ARCHITECTURE.md", import.meta.url),
     "utf8"
@@ -26,8 +26,11 @@ test("traceability guard: contracts map stable elements to intent and tests", as
   assert.match(overall, /TC-EX-001/);
   assert.match(overall, /TC-EX-002/);
   assert.match(overall, /TC-EX-003/);
+  assert.match(overall, /assets\/sprite\.blend/);
   assert.match(runtime, /InteractionStateDrivenEmbodiment/);
   assert.match(mediator, /TruthfulEmbodimentPrinciple/);
   assert.match(bridge, /StructuredAvatarExecutionFeedback/);
+  assert.match(bridge, /BlenderFeedback\.detail/);
+  assert.match(bridge, /assets\/sprite\.blend/);
   assert.ok(controlPoint.length > 0 && observationPoint.length > 0);
 });

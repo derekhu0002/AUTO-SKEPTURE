@@ -9,6 +9,7 @@
 - Convert runtime lifecycle state into truthful semantic avatar actions.
 - Enforce mute/disable, graceful degradation, and preemption policy.
 - Isolate agent semantics from Blender transport details.
+- Preserve the existing bridge feedback shape and treat Sprite preset names as opaque bridge-owned detail.
 
 ## Implements
 
@@ -25,14 +26,17 @@
 - Inbound control point: `AvatarEmbodimentMediator.executeAction(action, context)`
 - Inbound control point: `AvatarEmbodimentMediator.setMuted(muted)`
 - Observation point: `MediatorOutcome.surfacedStatus`, `MediatorOutcome.feedback`, `MediatorOutcome.recoveryAction`
+- Observation boundary rule: `MediatorOutcome.feedback.detail` remains an opaque string supplied by the bridge; the mediator must not parse or depend on Sprite preset identifiers.
 - Outbound dependency: `BlenderBridge.sendAction(command)`
 
 ## Dependency Rules
 
 - May import only the bridge contract surface from `src/blender-bridge`.
 - Must not import runtime control-loop code from `src/agent-runtime`.
+- Must not import Blender-side asset paths, rig identifiers, or Sprite preset names.
 
 ## Test Ownership
 
 - Owns the core observation boundary for all three explicit testcases.
 - Owns critical guardrails for mute/disable, graceful degradation, and preemption policy.
+- Does not own concrete Sprite preset-selection assertions; those stay below the mediator boundary.

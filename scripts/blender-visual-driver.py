@@ -21,6 +21,25 @@ STATE_ROTATIONS = {
     "restrained_apology": (math.radians(-12.0), 0.0, 0.0),
 }
 
+SPRITE_SELECTIONS = {
+    "thinking": {
+        "preset": "Sprite focus preset",
+        "action_family": "Sprite_eyemask_focus + ANI-Sprite_Idle_Standing",
+    },
+    "confirming": {
+        "preset": "Sprite confirm preset",
+        "action_family": "Sprite_eyemask_happy + Sprite_mouth_smileclosed",
+    },
+    "neutral_idle": {
+        "preset": "Sprite idle preset",
+        "action_family": "ANI-Sprite_Idle_Standing",
+    },
+    "restrained_apology": {
+        "preset": "Sprite apology preset",
+        "action_family": "Sprite_eyemask_squint + Sprite_mouth_frownclosed",
+    },
+}
+
 
 def main() -> int:
     try:
@@ -41,16 +60,19 @@ def main() -> int:
 
     action = request.get("action", "unknown")
     request_id = request.get("requestId", "unknown-request")
+    sprite_selection = select_sprite_selection(action)
 
     scene = bpy.context.scene
     scene["auto_skepture_last_action"] = action
     scene["auto_skepture_last_request_id"] = request_id
-    scene["auto_skepture_last_detail"] = build_detail(action, request_id)
+    scene["auto_skepture_last_sprite_preset"] = sprite_selection["preset"]
+    scene["auto_skepture_last_sprite_action_family"] = sprite_selection["action_family"]
+    scene["auto_skepture_last_detail"] = build_detail(action, request_id, sprite_selection)
 
     ensure_scene_defaults(scene)
     status_object = ensure_status_text_object()
     status_material = ensure_status_material()
-    apply_visual_state(status_object, status_material, action, request_id)
+    apply_visual_state(status_object, status_material, action, request_id, sprite_selection)
 
     dwell_seconds = parse_dwell_seconds(os.environ.get("AUTO_SKEPTURE_VISUAL_HOLD_SECONDS"))
     if dwell_seconds > 0:
@@ -61,7 +83,7 @@ def main() -> int:
         "acknowledged": True,
         "status": "ok",
         "observedState": action,
-        "detail": build_detail(action, request_id),
+        "detail": build_detail(action, request_id, sprite_selection),
     }
 
     with open(response_path, "w", encoding="utf-8") as response_file:
@@ -121,10 +143,12 @@ def apply_visual_state(
     status_material: bpy.types.Material,
     action: str,
     request_id: str,
+    sprite_selection: dict[str, str],
 ) -> None:
     color = STATE_COLORS.get(action, STATE_COLORS["neutral_idle"])
     rotation = STATE_ROTATIONS.get(action, STATE_ROTATIONS["neutral_idle"])
-    status_object.data.body = f"AUTO-SKEPTURE\n{action}\n{request_id}"
+    preset_label = sprite_selection["preset"]
+    status_object.data.body = f"AUTO-SKEPTURE\n{action}\n{preset_label}"
     status_object.rotation_euler = rotation
 
     if status_object.data.materials:
@@ -168,8 +192,20 @@ def parse_dwell_seconds(raw_value: str | None) -> float:
     return value
 
 
-def build_detail(action: str, request_id: str) -> str:
-    return f"Blender {bpy.app.version_string} visually rendered {action} for {request_id}."
+def select_sprite_selection(action: str) -> dict[str, str]:
+    return SPRITE_SELECTIONS.get(action, {
+        "preset": "Sprite fallback preset",
+        "action_family": "neutral_idle fallback",
+    })
+
+
+def build_detail(action: str, request_id: str, sprite_selection: dict[str, str]) -> str:
+    preset = sprite_selection["preset"]
+    action_family = sprite_selection["action_family"]
+    return (
+        f"Blender {bpy.app.version_string} visually rendered {action} for {request_id}; "
+        f"selected Sprite preset '{preset}' using Sprite action family '{action_family}'."
+    )
 
 
 def write_error(message: str) -> None:

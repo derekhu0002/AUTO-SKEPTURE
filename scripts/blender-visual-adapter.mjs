@@ -10,6 +10,7 @@ const request = JSON.parse(input);
 const scriptFilePath = fileURLToPath(import.meta.url);
 const workspaceRoot = resolve(scriptFilePath, "..", "..");
 const pythonDriver = resolve(workspaceRoot, "scripts", "blender-visual-driver.py");
+const defaultBlendFile = resolve(workspaceRoot, "assets/sprite.blend");
 const tempDir = await mkdtemp(join(tmpdir(), "auto-skepture-blender-visual-"));
 const requestPath = join(tempDir, "request.json");
 const responsePath = join(tempDir, "response.json");
@@ -44,7 +45,7 @@ try {
 }
 
 function buildBlenderArgs({ pythonDriver, requestPath, responsePath }) {
-  const blendFile = process.env.BLENDER_VISUAL_BLEND_FILE;
+  const blendFile = process.env.BLENDER_VISUAL_BLEND_FILE || defaultBlendFile;
   const args = [];
 
   if (blendFile) {
