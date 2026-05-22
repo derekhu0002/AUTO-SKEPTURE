@@ -50,21 +50,24 @@ The dependency direction is stable and one-way. Reverse imports are architectura
 
 ### `TC-EX-001 ResponseStartEmbodiment`
 
-- Entry point: `tests/explicit/response-start-embodiment.test.ts`
+- Baseline entry point: `tests/explicit/response-start-embodiment.test.ts`
+- Executable entry point: `scripts/run-tc-ex-001.mjs`
 - Control point: `AgentRuntime.handleResponseLifecycle({ type: "response_start" })`
 - Observation point: returned mediator outcome plus structured feedback from the configured Blender adapter command.
 - Protected baseline: `tests/fixtures/explicit-baselines.ts`
 
 ### `TC-EX-002 ResponseCompleteEmbodiment`
 
-- Entry point: `tests/explicit/response-complete-embodiment.test.ts`
+- Baseline entry point: `tests/explicit/response-complete-embodiment.test.ts`
+- Executable entry point: `scripts/run-tc-ex-002.mjs`
 - Control point: `AgentRuntime.handleResponseLifecycle({ type: "response_complete" })`
 - Observation point: returned mediator outcome plus structured feedback from the configured Blender adapter command.
 - Protected baseline: `tests/fixtures/explicit-baselines.ts`
 
 ### `TC-EX-003 BlenderDisconnectGracefulDegradation`
 
-- Entry point: `tests/explicit/blender-disconnect-graceful-degradation.test.ts`
+- Baseline entry point: `tests/explicit/blender-disconnect-graceful-degradation.test.ts`
+- Executable entry point: `scripts/run-tc-ex-003.mjs`
 - Control point: `AvatarEmbodimentMediator.executeAction(...)` against a real stdio bridge configured to be unavailable or disconnected.
 - Observation point: degraded surfaced status, neutral-idle recovery target, and continued runtime-safe outcome.
 - Protected baseline: `tests/fixtures/explicit-baselines.ts`

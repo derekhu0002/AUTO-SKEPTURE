@@ -78,6 +78,10 @@
         {
           "name": "acceptance_outcomes",
           "content": "The capability is limited to local-machine-first operation for the first baseline.\nAvatar behavior is presentation-layer feedback and must not replace the assistant's core task behavior.\nThe first baseline covers facial expression plus a small set of simple body gestures."
+        },
+        {
+          "name": "explicit_testcase_inventory",
+          "content": "TC-EX-001 ResponseStartEmbodiment -> baseline #file:tests/explicit/response-start-embodiment.test.ts ; executable #file:scripts/run-tc-ex-001.mjs\nTC-EX-002 ResponseCompleteEmbodiment -> baseline #file:tests/explicit/response-complete-embodiment.test.ts ; executable #file:scripts/run-tc-ex-002.mjs\nTC-EX-003 BlenderDisconnectGracefulDegradation -> baseline #file:tests/explicit/blender-disconnect-graceful-degradation.test.ts ; executable #file:scripts/run-tc-ex-003.mjs"
         }
       ],
       "subdiagram_views": [
@@ -96,24 +100,24 @@
           "description": "When the assistant begins a qualifying response, the avatar should enter a bounded thinking or acknowledging state through the mediator. Control point: the agent enters a qualifying response-start lifecycle state and the mediator selects a semantic avatar action. Observation point: Blender returns structured acknowledgement and resulting face or gesture state transition for the targeted avatar channel.",
           "type": "Acceptance Test",
           "Input": "Control point: AgentResponseLifecycleState drives AvatarEmbodimentMediator during response-start. Involved elements: EmbodiedAgentInteraction, ApprovedAvatarActionVocabulary, TruthfulEmbodimentPrinciple, AvatarEmbodimentMediator, AgentResponseLifecycleState, LocalBlenderAvatarEndpoint, StructuredAvatarExecutionFeedback.",
-          "acceptanceCriteria": "Observation point: structured Blender feedback confirms a thinking-compatible or acknowledging-compatible state transition. The selected action comes from the approved semantic vocabulary. The action begins within a sub-second target envelope under normal local conditions. The observed state is compatible with truthful thinking or acknowledging semantics.",
-          "TestResults": "Explicit acceptance baseline owned by EmbodiedAgentInteraction. Implementation must provide a single executable entrypoint without rewriting this control point or observation point."
+          "acceptanceCriteria": "scripts/run-tc-ex-001.mjs",
+          "TestResults": "Observation point: structured Blender feedback confirms a thinking-compatible or acknowledging-compatible state transition. The selected action comes from the approved semantic vocabulary. The action begins within a sub-second target envelope under normal local conditions. The observed state is compatible with truthful thinking or acknowledging semantics. Explicit acceptance baseline owned by EmbodiedAgentInteraction. Baseline evidence: #file:tests/explicit/response-start-embodiment.test.ts. Executable entrypoint: #file:scripts/run-tc-ex-001.mjs"
         },
         {
           "name": "TC-EX-002 ResponseCompleteEmbodiment",
           "description": "When the assistant completes a qualifying response, the avatar should transition into a bounded confirming or settling state. Control point: the agent enters a qualifying response-complete lifecycle state and the mediator selects a semantic confirming or settling action. Observation point: Blender returns structured acknowledgement and resulting face or gesture state transition for the targeted avatar channel.",
           "type": "Acceptance Test",
           "Input": "Control point: AgentResponseLifecycleState drives AvatarEmbodimentMediator during response-complete. Involved elements: EmbodiedAgentInteraction, ApprovedAvatarActionVocabulary, TruthfulEmbodimentPrinciple, InteractionStateDrivenEmbodiment, AvatarEmbodimentMediator, AgentResponseLifecycleState, LocalBlenderAvatarEndpoint, StructuredAvatarExecutionFeedback.",
-          "acceptanceCriteria": "Observation point: structured Blender feedback confirms a confirming-compatible or settling-compatible state transition. The selected action remains within the approved semantic vocabulary. The observed state is compatible with truthful completion or confirmation semantics. If a stale prior action exists, the newer completion state takes priority.",
-          "TestResults": "Explicit acceptance baseline owned by EmbodiedAgentInteraction. Implementation must preserve this acceptance boundary while materializing a single executable entrypoint."
+          "acceptanceCriteria": "scripts/run-tc-ex-002.mjs",
+          "TestResults": "Observation point: structured Blender feedback confirms a confirming-compatible or settling-compatible state transition. The selected action remains within the approved semantic vocabulary. The observed state is compatible with truthful completion or confirmation semantics. If a stale prior action exists, the newer completion state takes priority. Explicit acceptance baseline owned by EmbodiedAgentInteraction. Baseline evidence: #file:tests/explicit/response-complete-embodiment.test.ts. Executable entrypoint: #file:scripts/run-tc-ex-002.mjs"
         },
         {
           "name": "TC-EX-003 BlenderDisconnectGracefulDegradation",
           "description": "If Blender is unavailable, disconnected, or rejects a command, the assistant keeps functioning while avatar embodiment degrades safely. Control point: the mediator attempts a semantic avatar action against the local Blender endpoint while the endpoint is unavailable or rejecting commands. Observation point: structured feedback or surfaced status indicates avatar degradation, while the assistant response continues and recovery semantics return toward neutral idle.",
           "type": "Acceptance Test",
           "Input": "Control point: AvatarEmbodimentMediator executes a semantic avatar action against LocalBlenderAvatarEndpoint during a disconnect or rejection condition. Involved elements: EmbodiedAgentInteraction, TruthfulEmbodimentPrinciple, GracefulAvatarDegradationConstraint, AvatarEmbodimentMediator, LocalBlenderAvatarEndpoint, StructuredAvatarExecutionFeedback.",
-          "acceptanceCriteria": "Observation point: surfaced degradation status and recovery semantics return toward neutral idle while the assistant's core response loop continues. Avatar degradation is surfaced explicitly rather than silently ignored. The recovery target is neutral idle semantics rather than an arbitrary lingering pose.",
-          "TestResults": "Explicit acceptance baseline owned by EmbodiedAgentInteraction. Implementation must keep this graceful-degradation boundary executable without rewriting the failure semantics."
+          "acceptanceCriteria": "scripts/run-tc-ex-003.mjs",
+          "TestResults": "Observation point: surfaced degradation status and recovery semantics return toward neutral idle while the assistant's core response loop continues. Avatar degradation is surfaced explicitly rather than silently ignored. The recovery target is neutral idle semantics rather than an arbitrary lingering pose. Explicit acceptance baseline owned by EmbodiedAgentInteraction. Baseline evidence: #file:tests/explicit/blender-disconnect-graceful-degradation.test.ts. Executable entrypoint: #file:scripts/run-tc-ex-003.mjs"
         }
       ]
     },
