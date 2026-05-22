@@ -1,69 +1,40 @@
 import { spawn } from "node:child_process";
-import { mkdtemp, readFile, rm, writeFile, access, readdir } from "node:fs/promises";
+import { access, mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import { constants as fsConstants } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, delimiter, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 
-const input = await readStdIn();
-const request = JSON.parse(input);
-const scriptFilePath = fileURLToPath(import.meta.url);
-const workspaceRoot = resolve(scriptFilePath, "..", "..");
-const pythonDriver = resolve(workspaceRoot, "scripts", "blender-visual-driver.py");
-const tempDir = await mkdtemp(join(tmpdir(), "auto-skepture-blender-visual-"));
-const requestPath = join(tempDir, "request.json");
-const responsePath = join(tempDir, "response.json");
+const blendFile = process.argv[2] ?? process.env.BLENDER_INSPECT_BLEND_FILE;
+if (!blendFile) {
+  throw new Error(
+    "Provide a .blend path as the first argument or set BLENDER_INSPECT_BLEND_FILE.",
+  );
+}
+
+const pythonDriver = resolve("scripts", "inspect-blend.py");
+const tempDir = await mkdtemp(join(tmpdir(), "auto-skepture-blend-inspect-"));
+const outputPath = join(tempDir, "inspection.json");
 
 try {
   const blenderExecutable = await resolveBlenderExecutable();
-  await writeFile(requestPath, `${JSON.stringify(request)}\n`, "utf8");
+  await runProcess(blenderExecutable, [
+    blendFile,
+    "--background",
+    "--python-exit-code",
+    "1",
+    "--python",
+    pythonDriver,
+    "--",
+    outputPath,
+  ]);
 
-  const args = buildBlenderArgs({ pythonDriver, requestPath, responsePath });
-
-  const { stderr } = await runProcess(blenderExecutable, args, {
-    cwd: process.env.BLENDER_WORKING_DIRECTORY,
-    responsePath,
-    autoClose: process.env.BLENDER_VISUAL_LEAVE_OPEN !== "1",
-    timeoutMs: parseTimeout(process.env.BLENDER_VISUAL_TIMEOUT_MS) ?? 90_000,
-  });
-
-  const response = await readFile(responsePath, "utf8");
-  process.stdout.write(response.trim());
-  if (!response.endsWith("\n")) {
+  const report = await readFile(outputPath, "utf8");
+  process.stdout.write(report);
+  if (!report.endsWith("\n")) {
     process.stdout.write("\n");
   }
-  if (stderr.trim()) {
-    process.stderr.write(stderr);
-  }
-} catch (error) {
-  const message = error instanceof Error ? error.message : String(error);
-  console.error(message);
-  process.exitCode = 1;
 } finally {
   await rm(tempDir, { recursive: true, force: true });
-}
-
-function buildBlenderArgs({ pythonDriver, requestPath, responsePath }) {
-  const blendFile = process.env.BLENDER_VISUAL_BLEND_FILE;
-  const args = [];
-
-  if (blendFile) {
-    args.push(blendFile);
-  } else if (process.env.BLENDER_VISUAL_FACTORY_STARTUP !== "0") {
-    args.push("--factory-startup");
-  }
-
-  args.push("--python-exit-code", "1", "--python", pythonDriver, "--", requestPath, responsePath);
-  return args;
-}
-
-async function readStdIn() {
-  const chunks = [];
-  for await (const chunk of process.stdin) {
-    chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
-  }
-
-  return Buffer.concat(chunks).toString("utf8").trim();
 }
 
 async function resolveBlenderExecutable() {
@@ -143,11 +114,7 @@ async function tryResolveViaWindowsRegistry() {
             "powershell.exe",
           )
         : "powershell.exe";
-    const { stdout } = await runProcess(
-      powershellPath,
-      ["-NoProfile", "-Command", script],
-      { timeoutMs: 10_000 },
-    );
+    const { stdout } = await runProcess(powershellPath, ["-NoProfile", "-Command", script]);
     const installLocation = stdout.trim().split(/\r?\n/)[0]?.trim();
     if (!installLocation) {
       return null;
@@ -199,73 +166,14 @@ async function exists(path) {
   }
 }
 
-function parseTimeout(rawTimeout) {
-  if (!rawTimeout) {
-    return undefined;
-  }
-
-  const parsed = Number(rawTimeout);
-  if (!Number.isFinite(parsed) || parsed <= 0) {
-    throw new Error("BLENDER_VISUAL_TIMEOUT_MS must be a positive number when set.");
-  }
-
-  return parsed;
-}
-
-function runProcess(command, args, options) {
+function runProcess(command, args) {
   return new Promise((resolvePromise, reject) => {
     const child = spawn(command, args, {
-      cwd: options.cwd,
       stdio: ["ignore", "pipe", "pipe"],
     });
 
     let stdout = "";
     let stderr = "";
-    let settled = false;
-    let responseResolved = false;
-
-    const finish = (callback) => {
-      if (settled) {
-        return;
-      }
-
-      settled = true;
-      clearTimeout(timeoutHandle);
-      clearInterval(responsePollHandle);
-      callback();
-    };
-
-    const resolveFromResponse = async () => {
-      if (responseResolved || settled) {
-        return;
-      }
-
-      try {
-        await access(options.responsePath, fsConstants.F_OK);
-      } catch {
-        return;
-      }
-
-      responseResolved = true;
-      if (options.autoClose) {
-        child.kill();
-      }
-
-      finish(() => {
-        resolvePromise({ stdout, stderr });
-      });
-    };
-
-    const timeoutHandle = setTimeout(() => {
-      child.kill();
-      finish(() => {
-        reject(new Error(`Blender process timed out after ${options.timeoutMs}ms.`));
-      });
-    }, options.timeoutMs);
-
-    const responsePollHandle = setInterval(() => {
-      void resolveFromResponse();
-    }, 200);
 
     child.stdout.setEncoding("utf8");
     child.stderr.setEncoding("utf8");
@@ -275,27 +183,14 @@ function runProcess(command, args, options) {
     child.stderr.on("data", (chunk) => {
       stderr += chunk;
     });
-    child.on("error", (error) => {
-      finish(() => reject(error));
-    });
+    child.on("error", reject);
     child.on("close", (code) => {
-      finish(() => {
-        if (responseResolved) {
-          resolvePromise({ stdout, stderr });
-          return;
-        }
+      if (code !== 0) {
+        reject(new Error(stderr.trim() || stdout.trim() || `Blender exited with code ${code}.`));
+        return;
+      }
 
-        if (code !== 0) {
-          reject(
-            new Error(
-              `Blender exited with code ${code}. ${stderr.trim() || stdout.trim() || "No output."}`,
-            ),
-          );
-          return;
-        }
-
-        resolvePromise({ stdout, stderr });
-      });
+      resolvePromise({ stdout, stderr });
     });
   });
 }

@@ -82,12 +82,15 @@ def ensure_status_text_object() -> bpy.types.Object:
     object_name = "AUTO_SKEPTURE_STATUS"
     existing = bpy.data.objects.get(object_name)
     if existing is not None:
-      return existing
+        return existing
 
-    bpy.ops.object.text_add(location=(-2.8, 0.0, 1.2), rotation=(math.radians(90.0), 0.0, math.radians(90.0)))
-    status_object = bpy.context.object
+    text_curve = bpy.data.curves.new(f"{object_name}_CURVE", type="FONT")
+    status_object = bpy.data.objects.new(object_name, text_curve)
+    bpy.context.scene.collection.objects.link(status_object)
     status_object.name = object_name
     status_object.data.name = f"{object_name}_CURVE"
+    status_object.location = (-2.8, 0.0, 1.2)
+    status_object.rotation_euler = (math.radians(90.0), 0.0, math.radians(90.0))
     status_object.scale = (0.45, 0.45, 0.45)
     status_object.data.align_x = "CENTER"
     status_object.data.align_y = "CENTER"
