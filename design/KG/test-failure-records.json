@@ -1,14 +1,1 @@
-[
-	{
-		"path": "tests/support/preemption-policy.test.ts",
-		"category": "supporting-non-explicit-test",
-		"signal": "The mediator preemption guardrail remains materialized as test.todo, so newest-state-wins behavior is not yet protected by an executable support test.",
-		"nextAction": "Replace the todo with an executable support guardrail that drives two rapid lifecycle events through the mediator and asserts that the newest semantic action wins."
-	},
-	{
-		"path": ".github/validator/script/validateSystemArchitecture.js",
-		"category": "tooling-validation",
-		"signal": "npm run validate:system-architecture fails under package type module because the validator script uses CommonJS globals such as require and __dirname.",
-		"nextAction": "Convert the validator to ESM or rename it to .cjs so stage validation runs without the temporary CommonJS wrapper."
-	}
-]
+[]

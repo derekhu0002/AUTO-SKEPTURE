@@ -9,4 +9,7 @@ export class AgentRuntime {
     async handleResponseLifecycle(event) {
         return this.mediator.handleLifecycleEvent(event);
     }
+    async handleSemanticAvatarAction(action, requestId) {
+        return this.mediator.executeAction(action, requestId);
+    }
 }

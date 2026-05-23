@@ -114,6 +114,8 @@ function printUsage() {
       "",
       "Environment:",
       "  BLENDER_EXECUTABLE           Optional explicit blender.exe path.",
+      "  BLENDER_LIVE_PORT            Optional localhost port for an already-open Blender live control server.",
+      "  BLENDER_LIVE_HOST            Optional host for the live Blender control server. Defaults to 127.0.0.1.",
       "  BLENDER_ADAPTER_COMMAND      Optional custom adapter command.",
       "  BLENDER_ADAPTER_ARGS         Optional custom adapter arguments.",
       "  BLENDER_ADAPTER_CWD          Optional adapter working directory.",
@@ -129,7 +131,7 @@ function runRuntimeHelper(action, requestId) {
       ...process.env,
       AUTO_SKEPTURE_USE_REPO_ADAPTER:
         process.env.AUTO_SKEPTURE_USE_REPO_ADAPTER ??
-        (process.env.BLENDER_ADAPTER_COMMAND ? undefined : "1"),
+        (process.env.BLENDER_ADAPTER_COMMAND || process.env.BLENDER_LIVE_PORT ? undefined : "1"),
     };
     const child = spawn(process.execPath, [tsxCli, runtimeHelper, action, requestId], {
       stdio: ["ignore", "pipe", "pipe"],

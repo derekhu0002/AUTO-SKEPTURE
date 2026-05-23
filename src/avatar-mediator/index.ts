@@ -26,6 +26,8 @@ export interface MediatorOutcome {
 export class AvatarEmbodimentMediator {
   private muted = false;
 
+  private executionTail: Promise<void> = Promise.resolve();
+
   public constructor(private readonly bridge: BlenderBridge) {}
 
   public setMuted(muted: boolean): void {
@@ -53,31 +55,42 @@ export class AvatarEmbodimentMediator {
     action: AvatarActionName,
     requestId: string
   ): Promise<MediatorOutcome> {
-    const command: BlenderActionCommand = {
-      action,
-      requestId,
-      source: "avatar-mediator",
+    const runAction = async (): Promise<MediatorOutcome> => {
+      const command: BlenderActionCommand = {
+        action,
+        requestId,
+        source: "avatar-mediator",
+      };
+
+      try {
+        const feedback = await this.bridge.sendAction(command);
+
+        return {
+          status: "executed",
+          surfacedStatus: `Avatar action '${action}' executed.`,
+          feedback,
+          recoveryAction: null,
+        };
+      } catch (error) {
+        const detail = error instanceof Error ? error.message : String(error);
+
+        return {
+          status: "degraded",
+          surfacedStatus: `Avatar degraded: ${detail}`,
+          feedback: null,
+          recoveryAction: "neutral_idle",
+        };
+      }
     };
 
-    try {
-      const feedback = await this.bridge.sendAction(command);
+    const previousExecution = this.executionTail;
+    const nextExecution = previousExecution.then(runAction, runAction);
+    this.executionTail = nextExecution.then(
+      () => undefined,
+      () => undefined,
+    );
 
-      return {
-        status: "executed",
-        surfacedStatus: `Avatar action '${action}' executed.`,
-        feedback,
-        recoveryAction: null,
-      };
-    } catch (error) {
-      const detail = error instanceof Error ? error.message : String(error);
-
-      return {
-        status: "degraded",
-        surfacedStatus: `Avatar degraded: ${detail}`,
-        feedback: null,
-        recoveryAction: "neutral_idle",
-      };
-    }
+    return nextExecution;
   }
 }
 

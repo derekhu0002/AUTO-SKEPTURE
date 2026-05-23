@@ -1,6 +1,7 @@
 export class AvatarEmbodimentMediator {
     bridge;
     muted = false;
+    executionTail = Promise.resolve();
     constructor(bridge) {
         this.bridge = bridge;
     }
@@ -20,29 +21,35 @@ export class AvatarEmbodimentMediator {
         return this.executeAction(action, event.requestId);
     }
     async executeAction(action, requestId) {
-        const command = {
-            action,
-            requestId,
-            source: "avatar-mediator",
+        const runAction = async () => {
+            const command = {
+                action,
+                requestId,
+                source: "avatar-mediator",
+            };
+            try {
+                const feedback = await this.bridge.sendAction(command);
+                return {
+                    status: "executed",
+                    surfacedStatus: `Avatar action '${action}' executed.`,
+                    feedback,
+                    recoveryAction: null,
+                };
+            }
+            catch (error) {
+                const detail = error instanceof Error ? error.message : String(error);
+                return {
+                    status: "degraded",
+                    surfacedStatus: `Avatar degraded: ${detail}`,
+                    feedback: null,
+                    recoveryAction: "neutral_idle",
+                };
+            }
         };
-        try {
-            const feedback = await this.bridge.sendAction(command);
-            return {
-                status: "executed",
-                surfacedStatus: `Avatar action '${action}' executed.`,
-                feedback,
-                recoveryAction: null,
-            };
-        }
-        catch (error) {
-            const detail = error instanceof Error ? error.message : String(error);
-            return {
-                status: "degraded",
-                surfacedStatus: `Avatar degraded: ${detail}`,
-                feedback: null,
-                recoveryAction: "neutral_idle",
-            };
-        }
+        const previousExecution = this.executionTail;
+        const nextExecution = previousExecution.then(runAction, runAction);
+        this.executionTail = nextExecution.then(() => undefined, () => undefined);
+        return nextExecution;
     }
 }
 function mapLifecycleEventToAction(event) {

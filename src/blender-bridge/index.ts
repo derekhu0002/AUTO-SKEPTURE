@@ -33,9 +33,19 @@ export interface StdioBridgeOptions {
 
 export function getBridgeOptionsFromEnvironment(): StdioBridgeOptions {
   const command = process.env.BLENDER_ADAPTER_COMMAND;
+  const livePort = process.env.BLENDER_LIVE_PORT;
   if (!command && process.env.AUTO_SKEPTURE_USE_REPO_ADAPTER !== "1") {
+    if (livePort) {
+      return {
+        command: process.execPath,
+        args: [resolve("scripts", "blender-live-adapter.mjs")],
+        cwd: process.env.BLENDER_ADAPTER_CWD,
+        timeoutMs: parseTimeout(process.env.BLENDER_ADAPTER_TIMEOUT_MS),
+      };
+    }
+
     throw new Error(
-      "BLENDER_ADAPTER_COMMAND is required unless AUTO_SKEPTURE_USE_REPO_ADAPTER=1.",
+      "BLENDER_ADAPTER_COMMAND is required unless AUTO_SKEPTURE_USE_REPO_ADAPTER=1 or BLENDER_LIVE_PORT is set.",
     );
   }
 

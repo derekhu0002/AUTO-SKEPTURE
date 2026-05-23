@@ -11,19 +11,27 @@ const UNSUPPORTED_MOTION_PATTERN = /跳舞|dance|攻击|attack|战斗|fight|性�
 const RULES = [
   {
     action: "thinking",
-    patterns: [/思考|想一想|考虑|斟酌|thinking|think|listen|listening|wait|waiting|ponder/i],
+    patterns: [
+      /思考|想一想|考虑|斟酌|沉思|思索|琢磨|thinking|think|listen|listening|wait|waiting|ponder/i,
+    ],
   },
   {
     action: "confirming",
-    patterns: [/确认|完成|结束|同意|点头|acknowledge|acknowledging|confirm|confirmed|finish|done|success/i],
+    patterns: [
+      /确认|完成|结束|同意|点头|点头确认|确认一下|确认完成|acknowledge|acknowledging|confirm|confirmed|finish|done|success/i,
+    ],
   },
   {
     action: "neutral_idle",
-    patterns: [/回到中立|中立|待机|静止|重置|恢复|冷静|idle|neutral|reset|rest|calm/i],
+    patterns: [
+      /回到中立|中立|待机|回到待机|返回待机|静止|重置|恢复|冷静|idle|neutral|reset|rest|calm/i,
+    ],
   },
   {
     action: "restrained_apology",
-    patterns: [/抱歉|道歉|不好意思|sorry|apology|apologize|failure|mistake/i],
+    patterns: [
+      /抱歉|道歉|不好意思|轻微抱歉|轻轻道歉|小幅道歉|克制抱歉|克制道歉|sorry|apology|apologize|failure|mistake/i,
+    ],
   },
 ];
 

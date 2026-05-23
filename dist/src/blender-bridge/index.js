@@ -1,4 +1,28 @@
 import { spawn } from "node:child_process";
+import { resolve } from "node:path";
+export function getBridgeOptionsFromEnvironment() {
+    const command = process.env.BLENDER_ADAPTER_COMMAND;
+    const livePort = process.env.BLENDER_LIVE_PORT;
+    if (!command && process.env.AUTO_SKEPTURE_USE_REPO_ADAPTER !== "1") {
+        if (livePort) {
+            return {
+                command: process.execPath,
+                args: [resolve("scripts", "blender-live-adapter.mjs")],
+                cwd: process.env.BLENDER_ADAPTER_CWD,
+                timeoutMs: parseTimeout(process.env.BLENDER_ADAPTER_TIMEOUT_MS),
+            };
+        }
+        throw new Error("BLENDER_ADAPTER_COMMAND is required unless AUTO_SKEPTURE_USE_REPO_ADAPTER=1 or BLENDER_LIVE_PORT is set.");
+    }
+    return {
+        command: command ?? process.execPath,
+        args: command !== undefined
+            ? splitArgs(process.env.BLENDER_ADAPTER_ARGS)
+            : [resolve("scripts", "blender-adapter.mjs")],
+        cwd: process.env.BLENDER_ADAPTER_CWD,
+        timeoutMs: parseTimeout(process.env.BLENDER_ADAPTER_TIMEOUT_MS),
+    };
+}
 export class StdioBlenderBridge {
     options;
     constructor(options) {
@@ -90,4 +114,23 @@ function parseWireResponse(stdout) {
         observedState: parsed.observedState,
         detail: parsed.detail,
     };
+}
+function splitArgs(rawArgs) {
+    if (!rawArgs) {
+        return undefined;
+    }
+    return rawArgs
+        .split(" ")
+        .map((part) => part.trim())
+        .filter((part) => part.length > 0);
+}
+function parseTimeout(rawTimeout) {
+    if (!rawTimeout) {
+        return undefined;
+    }
+    const parsed = Number(rawTimeout);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+        throw new Error("BLENDER_ADAPTER_TIMEOUT_MS must be a positive number when set.");
+    }
+    return parsed;
 }

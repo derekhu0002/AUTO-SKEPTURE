@@ -1,3 +1,4 @@
+import { getBridgeOptionsFromEnvironment, } from "../../src/blender-bridge/index.js";
 import { resolve } from "node:path";
 export function shouldRunRealEnvironmentTests() {
     return Boolean(process.env.BLENDER_ADAPTER_COMMAND || process.env.AUTO_SKEPTURE_USE_REPO_ADAPTER === "1");
@@ -7,18 +8,7 @@ export function shouldRunRealEnvironmentDisconnectTest() {
         process.env.AUTO_SKEPTURE_USE_REPO_ADAPTER === "1");
 }
 export function getRealEnvironmentBridgeOptions() {
-    const command = process.env.BLENDER_ADAPTER_COMMAND;
-    if (!command && process.env.AUTO_SKEPTURE_USE_REPO_ADAPTER !== "1") {
-        throw new Error("BLENDER_ADAPTER_COMMAND is required unless AUTO_SKEPTURE_USE_REPO_ADAPTER=1.");
-    }
-    return {
-        command: command ?? process.execPath,
-        args: command !== undefined
-            ? splitArgs(process.env.BLENDER_ADAPTER_ARGS)
-            : [resolve("scripts", "blender-adapter.mjs")],
-        cwd: process.env.BLENDER_ADAPTER_CWD,
-        timeoutMs: parseTimeout(process.env.BLENDER_ADAPTER_TIMEOUT_MS),
-    };
+    return getBridgeOptionsFromEnvironment();
 }
 export function getRealEnvironmentDisconnectBridgeOptions() {
     if (process.env.BLENDER_ADAPTER_DISCONNECT_COMMAND) {
