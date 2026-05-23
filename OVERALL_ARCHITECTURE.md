@@ -153,12 +153,12 @@ For the current Sprite iteration, ownership is additionally frozen as follows:
 - `npm test` runs architecture guards and support guardrails locally; the four explicit acceptance baselines skip unless the Blender adapter environment variables are configured.
 - `npm run test:real` is the dedicated entrypoint for the real-environment explicit baselines and now launches the repository-local Blender and disconnect adapter scripts automatically.
 - `npm run observe:blender` is a parallel human-observation entrypoint that opens Blender with a visible scene annotation path and replays a short state sequence without changing the frozen explicit baselines.
-- Positive real-environment baselines currently pass against the local Blender installation discovered on this machine.
+- `npm run test:real` currently passes all four explicit baselines against the repository-local Blender and disconnect adapters on this machine.
 - The explicit graceful-degradation baseline now passes through the repository-local disconnect adapter without additional manual setup.
-- The new explicit semantic-control baseline is executable through `scripts/run-tc-ex-004.mjs` and currently demonstrates the bounded host-owned semantic control path.
-- `tests/architecture/semantic-control-boundary-guard.test.ts` is expected to fail until `scripts/control-avatar.mjs` delegates semantic execution through the runtime/mediator boundary instead of spawning the bridge adapter directly.
-- The current Sprite implementation queue is intentionally carried by support guardrails rather than by modifying the explicit acceptance baselines.
-- Until Coding/Repair completes the Sprite observation work, `tests/support/sprite-visual-scene-binding.test.ts` and `tests/support/sprite-feedback-detail-contract.test.ts` are expected to fail and therefore keep `npm test` red for the right reason.
+- The explicit semantic-control baseline is executable through `scripts/run-tc-ex-004.mjs` and currently demonstrates the bounded host-owned semantic control path.
+- `tests/architecture/semantic-control-boundary-guard.test.ts` currently passes because `scripts/control-avatar.mjs` delegates semantic execution through the runtime/mediator boundary instead of spawning the bridge adapter directly.
+- `tests/support/sprite-visual-scene-binding.test.ts` and `tests/support/sprite-feedback-detail-contract.test.ts` currently pass, confirming that the observation path defaults to `assets/sprite.blend` and that Sprite-specific detail remains inside `BlenderFeedback.detail`.
+- The remaining Coding/Repair queue is now limited to unfinished support work such as the mediator preemption guardrail recorded in `tests/support/preemption-policy.test.ts` and tooling defects such as the `npm run validate:system-architecture` module-format mismatch.
 - Optional override environment for positive real-environment baselines: `BLENDER_EXECUTABLE`, `BLENDER_ADAPTER_TIMEOUT_MS`, and `BLENDER_WORKING_DIRECTORY`.
 - Optional environment for visual observation: `BLENDER_VISUAL_BLEND_FILE`, `BLENDER_VISUAL_TIMEOUT_MS`, `AUTO_SKEPTURE_VISUAL_HOLD_SECONDS`, and `BLENDER_VISUAL_FACTORY_STARTUP=0` when the chosen `.blend` file should remain untouched by factory startup.
 - Advanced adapter override environment remains available: `BLENDER_ADAPTER_COMMAND`, with optional `BLENDER_ADAPTER_ARGS`, `BLENDER_ADAPTER_CWD`, and `BLENDER_ADAPTER_TIMEOUT_MS`.

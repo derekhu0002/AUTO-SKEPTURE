@@ -9,7 +9,7 @@
 - Freeze read-only explicit acceptance entrypoints under `tests/explicit`.
 - Freeze critical non-explicit architecture guardrails under `tests/architecture`.
 - Host supporting fixtures and support tests under `tests/fixtures` and `tests/support`.
-- Carry expected-failing support tests that define the Coding/Repair queue when implementation architecture is complete but Sprite behavior is not yet implemented.
+- Carry supporting guardrails that either validate the current implementation state or define the remaining Coding/Repair queue when executable coverage is not yet complete.
 
 ## Protected Baselines
 
@@ -43,5 +43,6 @@ Critical explicit-entry correctness scope for the current iteration also protect
 - Natural-language intent mapping support coverage in `tests/support/avatar-intent-mapping.test.ts`
 - Executable acceptanceCriteria path guard for intent testcase launchers
 - Real-environment explicit tests launched through `npm run test:real` and the repository-local Blender and disconnect adapters
-- `tests/support/sprite-visual-scene-binding.test.ts` to drive fixed-scene binding on the observation path; expected to fail until Coding/Repair updates the visual adapter.
-- `tests/support/sprite-feedback-detail-contract.test.ts` to drive richer Sprite preset detail on the observation path; expected to fail until Coding/Repair updates the visual driver.
+- `tests/support/sprite-visual-scene-binding.test.ts` to freeze fixed-scene binding on the observation path and keep `assets/sprite.blend` as the default visual target unless explicitly overridden.
+- `tests/support/sprite-feedback-detail-contract.test.ts` to freeze the rule that Sprite-specific observation detail remains inside the existing `detail` field.
+- `tests/support/preemption-policy.test.ts` to reserve the newest-state-wins mediator guardrail as the remaining support-test coding queue; it is currently materialized as `test.todo` and not yet executable.
