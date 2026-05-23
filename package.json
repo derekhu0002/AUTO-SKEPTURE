@@ -11,7 +11,8 @@
     "validate:handoff:implementation": "node scripts/validate-handoff.mjs implementation",
     "control:avatar": "node scripts/control-avatar.mjs",
     "observe:blender": "node scripts/observe-in-blender.mjs",
-    "inspect:blender": "node scripts/inspect-blend.mjs"
+    "inspect:blender": "node scripts/inspect-blend.mjs",
+    "validate:handoff": "node .github/validator/script/validateStageHandoff.js"
   },
   "devDependencies": {
     "@types/node": "^22.15.30",
