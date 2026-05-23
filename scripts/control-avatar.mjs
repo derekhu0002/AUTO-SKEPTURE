@@ -125,9 +125,15 @@ function runRuntimeHelper(action, requestId) {
   return new Promise((resolvePromise, reject) => {
     const tsxCli = resolve("node_modules", "tsx", "dist", "cli.mjs");
     const runtimeHelper = resolve("scripts", "control-avatar-runtime.ts");
+    const helperEnv = {
+      ...process.env,
+      AUTO_SKEPTURE_USE_REPO_ADAPTER:
+        process.env.AUTO_SKEPTURE_USE_REPO_ADAPTER ??
+        (process.env.BLENDER_ADAPTER_COMMAND ? undefined : "1"),
+    };
     const child = spawn(process.execPath, [tsxCli, runtimeHelper, action, requestId], {
       stdio: ["ignore", "pipe", "pipe"],
-      env: process.env,
+      env: helperEnv,
     });
 
     let stdout = "";

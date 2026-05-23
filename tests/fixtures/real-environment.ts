@@ -2,6 +2,7 @@ import {
   getBridgeOptionsFromEnvironment,
   type StdioBridgeOptions,
 } from "../../src/blender-bridge/index.js";
+import { resolve } from "node:path";
 
 export function shouldRunRealEnvironmentTests(): boolean {
   return Boolean(
