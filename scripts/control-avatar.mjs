@@ -25,22 +25,11 @@ if (!ACTIONS.has(resolvedAction)) {
   process.exit(1);
 }
 
-const adapterCommand = process.env.BLENDER_ADAPTER_COMMAND ?? process.execPath;
-const adapterArgs =
-  process.env.BLENDER_ADAPTER_COMMAND !== undefined
-    ? splitArgs(process.env.BLENDER_ADAPTER_ARGS)
-    : [resolve("scripts", "blender-adapter.mjs")];
-
-const payload = {
-  action: resolvedAction,
-  requestId,
-  source: "avatar-mediator",
-};
-
 try {
-  const result = await runAdapter(adapterCommand, adapterArgs, payload);
+  // Delegate execution to the AgentRuntime-owned helper rather than launching the bridge adapter directly.
+  const result = await runRuntimeHelper(resolvedAction, requestId);
   process.stdout.write(
-    `${JSON.stringify({ action: resolvedAction, feedback: result }, null, 2)}\n`,
+    `${JSON.stringify({ action: resolvedAction, ...result }, null, 2)}\n`,
   );
 } catch (error) {
   const message = error instanceof Error ? error.message : String(error);
@@ -114,22 +103,30 @@ function resolveRequestedAction(parsed) {
   process.exit(1);
 }
 
-function splitArgs(rawArgs) {
-  if (!rawArgs) {
-    return [];
-  }
-
-  return rawArgs
-    .split(" ")
-    .map((part) => part.trim())
-    .filter((part) => part.length > 0);
+function printUsage() {
+  process.stdout.write(
+    [
+      "Usage: npm run control:avatar -- <action> [--request-id <id>]",
+      "   or: npm run control:avatar -- --intent \"<natural language request>\" [--request-id <id>]",
+      "",
+      "Allowed actions:",
+      ...[...ACTIONS].map((action) => `  - ${action}`),
+      "",
+      "Environment:",
+      "  BLENDER_EXECUTABLE           Optional explicit blender.exe path.",
+      "  BLENDER_ADAPTER_COMMAND      Optional custom adapter command.",
+      "  BLENDER_ADAPTER_ARGS         Optional custom adapter arguments.",
+      "  BLENDER_ADAPTER_CWD          Optional adapter working directory.",
+    ].join("\n"),
+  );
 }
 
-function runAdapter(command, args, payload) {
+function runRuntimeHelper(action, requestId) {
   return new Promise((resolvePromise, reject) => {
-    const child = spawn(command, args, {
-      cwd: process.env.BLENDER_ADAPTER_CWD,
-      stdio: ["pipe", "pipe", "pipe"],
+    const tsxCli = resolve("node_modules", "tsx", "dist", "cli.mjs");
+    const runtimeHelper = resolve("scripts", "control-avatar-runtime.ts");
+    const child = spawn(process.execPath, [tsxCli, runtimeHelper, action, requestId], {
+      stdio: ["ignore", "pipe", "pipe"],
       env: process.env,
     });
 
@@ -147,7 +144,7 @@ function runAdapter(command, args, payload) {
     child.on("error", reject);
     child.on("close", (code) => {
       if (code !== 0) {
-        reject(new Error(stderr.trim() || `Adapter exited with code ${code}.`));
+        reject(new Error(stderr.trim() || `Runtime helper exited with code ${code}.`));
         return;
       }
 
@@ -157,26 +154,5 @@ function runAdapter(command, args, payload) {
         reject(error);
       }
     });
-
-    child.stdin.write(`${JSON.stringify(payload)}\n`);
-    child.stdin.end();
   });
-}
-
-function printUsage() {
-  process.stdout.write(
-    [
-      "Usage: npm run control:avatar -- <action> [--request-id <id>]",
-      "   or: npm run control:avatar -- --intent \"<natural language request>\" [--request-id <id>]",
-      "",
-      "Allowed actions:",
-      ...[...ACTIONS].map((action) => `  - ${action}`),
-      "",
-      "Environment:",
-      "  BLENDER_EXECUTABLE           Optional explicit blender.exe path.",
-      "  BLENDER_ADAPTER_COMMAND      Optional custom adapter command.",
-      "  BLENDER_ADAPTER_ARGS         Optional custom adapter arguments.",
-      "  BLENDER_ADAPTER_CWD          Optional adapter working directory.",
-    ].join("\n"),
-  );
 }

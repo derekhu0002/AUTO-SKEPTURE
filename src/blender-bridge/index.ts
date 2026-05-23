@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { resolve } from "node:path";
 
 export type AvatarActionName =
   | "thinking"
@@ -28,6 +29,25 @@ export interface StdioBridgeOptions {
   readonly args?: readonly string[];
   readonly cwd?: string;
   readonly timeoutMs?: number;
+}
+
+export function getBridgeOptionsFromEnvironment(): StdioBridgeOptions {
+  const command = process.env.BLENDER_ADAPTER_COMMAND;
+  if (!command && process.env.AUTO_SKEPTURE_USE_REPO_ADAPTER !== "1") {
+    throw new Error(
+      "BLENDER_ADAPTER_COMMAND is required unless AUTO_SKEPTURE_USE_REPO_ADAPTER=1.",
+    );
+  }
+
+  return {
+    command: command ?? process.execPath,
+    args:
+      command !== undefined
+        ? splitArgs(process.env.BLENDER_ADAPTER_ARGS)
+        : [resolve("scripts", "blender-adapter.mjs")],
+    cwd: process.env.BLENDER_ADAPTER_CWD,
+    timeoutMs: parseTimeout(process.env.BLENDER_ADAPTER_TIMEOUT_MS),
+  };
 }
 
 interface WireRequest {
@@ -155,4 +175,28 @@ function parseWireResponse(stdout: string): BlenderFeedback {
     observedState: parsed.observedState,
     detail: parsed.detail,
   };
+}
+
+function splitArgs(rawArgs: string | undefined): string[] | undefined {
+  if (!rawArgs) {
+    return undefined;
+  }
+
+  return rawArgs
+    .split(" ")
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0);
+}
+
+function parseTimeout(rawTimeout: string | undefined): number | undefined {
+  if (!rawTimeout) {
+    return undefined;
+  }
+
+  const parsed = Number(rawTimeout);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    throw new Error("BLENDER_ADAPTER_TIMEOUT_MS must be a positive number when set.");
+  }
+
+  return parsed;
 }

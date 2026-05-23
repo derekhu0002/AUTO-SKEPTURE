@@ -1,4 +1,5 @@
 import {
+  type AvatarActionName,
   type AgentLifecycleEvent,
   type MediatorOutcome,
   AvatarEmbodimentMediator,
@@ -17,5 +18,12 @@ export class AgentRuntime {
     event: AgentLifecycleEvent
   ): Promise<MediatorOutcome> {
     return this.mediator.handleLifecycleEvent(event);
+  }
+
+  public async handleSemanticAvatarAction(
+    action: AvatarActionName,
+    requestId: string,
+  ): Promise<MediatorOutcome> {
+    return this.mediator.executeAction(action, requestId);
   }
 }

@@ -9,6 +9,8 @@ export type AgentLifecycleEventType =
   | "response_start"
   | "response_complete";
 
+export type { AvatarActionName } from "../blender-bridge/index.js";
+
 export interface AgentLifecycleEvent {
   readonly type: AgentLifecycleEventType;
   readonly requestId: string;

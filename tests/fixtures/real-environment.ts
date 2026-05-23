@@ -1,5 +1,7 @@
-import type { StdioBridgeOptions } from "../../src/blender-bridge/index.js";
-import { resolve } from "node:path";
+import {
+  getBridgeOptionsFromEnvironment,
+  type StdioBridgeOptions,
+} from "../../src/blender-bridge/index.js";
 
 export function shouldRunRealEnvironmentTests(): boolean {
   return Boolean(
@@ -15,22 +17,7 @@ export function shouldRunRealEnvironmentDisconnectTest(): boolean {
 }
 
 export function getRealEnvironmentBridgeOptions(): StdioBridgeOptions {
-  const command = process.env.BLENDER_ADAPTER_COMMAND;
-  if (!command && process.env.AUTO_SKEPTURE_USE_REPO_ADAPTER !== "1") {
-    throw new Error(
-      "BLENDER_ADAPTER_COMMAND is required unless AUTO_SKEPTURE_USE_REPO_ADAPTER=1.",
-    );
-  }
-
-  return {
-    command: command ?? process.execPath,
-    args:
-      command !== undefined
-        ? splitArgs(process.env.BLENDER_ADAPTER_ARGS)
-        : [resolve("scripts", "blender-adapter.mjs")],
-    cwd: process.env.BLENDER_ADAPTER_CWD,
-    timeoutMs: parseTimeout(process.env.BLENDER_ADAPTER_TIMEOUT_MS),
-  };
+  return getBridgeOptionsFromEnvironment();
 }
 
 export function getRealEnvironmentDisconnectBridgeOptions(): StdioBridgeOptions {
