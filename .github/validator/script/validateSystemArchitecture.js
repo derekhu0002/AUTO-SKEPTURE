@@ -1,6 +1,9 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const graphPath = path.join(repoRoot, 'design', 'KG', 'SystemArchitecture.json');
 const schemaPathCandidates = [
