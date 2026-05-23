@@ -12,7 +12,8 @@
     "control:avatar": "node scripts/control-avatar.mjs",
     "observe:blender": "node scripts/observe-in-blender.mjs",
     "inspect:blender": "node scripts/inspect-blend.mjs",
-    "validate:handoff": "node .github/validator/script/validateStageHandoff.js"
+    "validate:handoff": "node .github/validator/script/validateStageHandoff.js",
+    "validate:system-architecture": "node .github/validator/script/validateSystemArchitecture.js"
   },
   "devDependencies": {
     "@types/node": "^22.15.30",
