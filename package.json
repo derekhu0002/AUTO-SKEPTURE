@@ -13,7 +13,7 @@
     "observe:blender": "node scripts/observe-in-blender.mjs",
     "inspect:blender": "node scripts/inspect-blend.mjs",
     "validate:handoff": "node .github/validator/script/validateStageHandoff.js",
-    "validate:system-architecture": "node .github/validator/script/validateSystemArchitecture.js"
+    "validate:system-architecture": "node .github/validator/script/validateSystemArchitecture.cjs"
   },
   "devDependencies": {
     "@types/node": "^22.15.30",
