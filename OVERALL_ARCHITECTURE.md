@@ -6,14 +6,17 @@ Implementation Design
 
 ## Scope
 
-This contract realizes the intent graph in `design/KG/SystemArchitecture.json` for the first embodied-agent baseline and the current Sprite observation iteration: a VS Code-local agent runtime drives a bounded avatar embodiment mediator, which in turn drives a local Blender bridge over a stdio JSON boundary.
+This contract realizes the intent graph in `design/KG/SystemArchitecture.json` for the first embodied-agent baseline, the current Sprite observation iteration, and the new bounded user semantic control path: a VS Code-local runtime boundary owns both lifecycle-driven embodiment and host-owned semantic control assets, hands approved semantic actions to a bounded avatar embodiment mediator, and uses a local Blender bridge over a stdio JSON boundary.
 
 ## Stable Elements
 
 ### `src/agent-runtime`
 
 - Responsibility: own the VS Code-side control loop boundary and convert runtime lifecycle changes into mediator calls.
+- Responsibility: own the host-side semantic control boundary assets for bounded user avatar requests, including the current workspace channel materialized by `.github/agents/blender-avatar-controller.agent.md`, `scripts/control-avatar.mjs`, and `scripts/avatar-intent-mapping.mjs`.
+- Responsibility: keep host-owned semantic control assets routed through the runtime/mediator semantic boundary rather than treating the bridge adapter as a first-class host API.
 - Directly implements: `InteractionStateDrivenEmbodiment`, `AgentResponseLifecycleState`.
+- Directly implements: `UserDirectedSemanticEmbodiment`, `UserSemanticAvatarControlInterface`, `UserSemanticAvatarActionRequest` through host-owned semantic control assets attached to this boundary.
 - Indirectly carries: `EmbodiedAgentInteraction` through `src/avatar-mediator`.
 - May depend on: `src/avatar-mediator` only.
 - Must not depend on: `src/blender-bridge` concrete transport internals.
@@ -21,6 +24,7 @@ This contract realizes the intent graph in `design/KG/SystemArchitecture.json` f
 ### `src/avatar-mediator`
 
 - Responsibility: own truthful, policy-bounded mapping from agent lifecycle state to semantic avatar actions and graceful degradation semantics.
+- Responsibility: own execution of approved user-requested semantic avatar actions once the host-side control boundary has reduced a request to the bounded semantic vocabulary.
 - Responsibility: keep Sprite asset names, rig names, and preset selection out of the runtime-facing semantic contract.
 - Directly implements: `AvatarEmbodimentMediator`, `ApprovedAvatarActionVocabulary`, `TruthfulEmbodimentPrinciple`, `GracefulAvatarDegradationConstraint`, `UserAvatarOverrideConstraint`.
 - Indirectly carries: `EmbodiedAgentInteraction` via the runtime control loop.
@@ -42,6 +46,7 @@ This contract realizes the intent graph in `design/KG/SystemArchitecture.json` f
 - Explicit testcase entrypoints live under `tests/explicit` and are read-only acceptance baselines for later coding work.
 - Critical non-explicit tests live under `tests/architecture`.
 - Supporting non-explicit tests live under `tests/support`.
+- Responsibility: freeze the new user-semantic-control acceptance entrypoint and the critical guardrails that keep that entrypoint bounded to approved semantic actions and stable ownership.
 
 ## Dependency Direction
 
@@ -52,9 +57,11 @@ The dependency direction is stable and one-way. Reverse imports are architectura
 For the current Sprite iteration, ownership is additionally frozen as follows:
 
 - `src/agent-runtime` owns lifecycle triggers only.
+- `src/agent-runtime` owns host semantic control intake only.
 - `src/avatar-mediator` owns semantic action selection only.
 - `src/blender-bridge` and its Blender-side assets own fixed-scene binding, Sprite preset selection, and richer observation detail formatting.
 - The headless explicit acceptance path remains semantically equivalent and read-only; Sprite-specific visual work lands on the observation path first.
+- The current workspace custom-agent channel remains a host-owned asset under the runtime boundary, not a separate fourth architecture layer.
 
 ## Explicit Testcase Ownership
 
@@ -82,12 +89,23 @@ For the current Sprite iteration, ownership is additionally frozen as follows:
 - Observation point: degraded surfaced status, neutral-idle recovery target, and continued runtime-safe outcome.
 - Protected baseline: `tests/fixtures/explicit-baselines.ts`
 
+### `TC-EX-004 UserSemanticAvatarRequestEmbodiment`
+
+- Baseline entry point: `tests/explicit/user-semantic-avatar-request-embodiment.test.ts`
+- Executable entry point: `scripts/run-tc-ex-004.mjs`
+- Control point: `scripts/control-avatar.mjs --intent "show a thinking state" --request-id <testcase-id>` as the current concrete host-owned semantic control command.
+- Observation point: the returned semantic control result exposes `action: "thinking"` and structured Blender feedback with an acknowledged thinking-compatible state transition.
+- Protected baseline: `tests/fixtures/explicit-baselines.ts`
+
 ## Critical Non-Explicit Guardrails
 
 ### Architecture boundary guards
 
 - Entry point: `tests/architecture/boundary-guard.test.ts`
 - Protects: stable directory import boundaries.
+
+- Entry point: `tests/architecture/semantic-control-boundary-guard.test.ts`
+- Protects: the host-owned semantic control asset boundary from bypassing runtime and mediator ownership by calling the bridge adapter directly.
 
 ### Dependency direction guards
 
@@ -98,6 +116,9 @@ For the current Sprite iteration, ownership is additionally frozen as follows:
 
 - Entry point: `tests/architecture/explicit-entrypoint-guard.test.ts`
 - Protects: presence of frozen explicit entrypoints and baseline fixture keys.
+
+- Entry point: `tests/architecture/user-semantic-entrypoint-guard.test.ts`
+- Protects: the user semantic control entrypoint rejects unsupported low-level rig requests instead of coercing them into Blender automation.
 
 ### Key implementation traceability guards
 
@@ -115,6 +136,9 @@ For the current Sprite iteration, ownership is additionally frozen as follows:
 - Entry point: `tests/support/lifecycle-mapping-contract.test.ts`
 - Purpose: keep response-start and response-complete semantic mapping fast to validate without requiring Blender.
 
+- Entry point: `tests/support/avatar-intent-mapping.test.ts`
+- Purpose: keep representative natural-language semantic mapping coverage fast to validate without requiring Blender.
+
 - Entry point: `tests/support/preemption-policy.test.ts`
 - Purpose: reserve the newest-state-wins guardrail at the mediator boundary for later coding work.
 
@@ -126,11 +150,13 @@ For the current Sprite iteration, ownership is additionally frozen as follows:
 
 ## Current Expected Execution State
 
-- `npm test` runs architecture guards and support guardrails locally; the three explicit acceptance baselines skip unless the Blender adapter environment variables are configured.
+- `npm test` runs architecture guards and support guardrails locally; the four explicit acceptance baselines skip unless the Blender adapter environment variables are configured.
 - `npm run test:real` is the dedicated entrypoint for the real-environment explicit baselines and now launches the repository-local Blender and disconnect adapter scripts automatically.
 - `npm run observe:blender` is a parallel human-observation entrypoint that opens Blender with a visible scene annotation path and replays a short state sequence without changing the frozen explicit baselines.
 - Positive real-environment baselines currently pass against the local Blender installation discovered on this machine.
 - The explicit graceful-degradation baseline now passes through the repository-local disconnect adapter without additional manual setup.
+- The new explicit semantic-control baseline is executable through `scripts/run-tc-ex-004.mjs` and currently demonstrates the bounded host-owned semantic control path.
+- `tests/architecture/semantic-control-boundary-guard.test.ts` is expected to fail until `scripts/control-avatar.mjs` delegates semantic execution through the runtime/mediator boundary instead of spawning the bridge adapter directly.
 - The current Sprite implementation queue is intentionally carried by support guardrails rather than by modifying the explicit acceptance baselines.
 - Until Coding/Repair completes the Sprite observation work, `tests/support/sprite-visual-scene-binding.test.ts` and `tests/support/sprite-feedback-detail-contract.test.ts` are expected to fail and therefore keep `npm test` red for the right reason.
 - Optional override environment for positive real-environment baselines: `BLENDER_EXECUTABLE`, `BLENDER_ADAPTER_TIMEOUT_MS`, and `BLENDER_WORKING_DIRECTORY`.

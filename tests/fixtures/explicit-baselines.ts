@@ -30,4 +30,12 @@ export const explicitBaselines = {
       "Mediator outcome surfaces degradation and neutral-idle recovery.",
     expectedAction: "neutral_idle",
   },
+  userSemanticRequest: {
+    testcaseId: "TC-EX-004",
+    controlPoint:
+      'scripts/control-avatar.mjs --intent "show a thinking state" --request-id <testcase-id>',
+    observationPoint:
+      "The semantic control result exposes action 'thinking' and structured Blender feedback with a thinking-compatible state.",
+    expectedAction: "thinking",
+  },
 } satisfies Record<string, ExplicitBaseline>;

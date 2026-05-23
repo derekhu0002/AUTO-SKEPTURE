@@ -5,7 +5,7 @@ import { readFile } from "node:fs/promises";
 test("traceability guard: contracts map stable elements to intent and tests", async () => {
   const controlPoint = "Read OVERALL_ARCHITECTURE.md and local ARCHITECTURE.md contracts.";
   const observationPoint =
-    "Contracts mention the intended stable elements, explicit testcase entrypoints, intent element mappings, and bridge-owned Sprite observation binding.";
+    "Contracts mention the intended stable elements, explicit testcase entrypoints, the user semantic control path, intent element mappings, and bridge-owned Sprite observation binding.";
   const overall = await readFile(
     new URL("../../OVERALL_ARCHITECTURE.md", import.meta.url),
     "utf8"
@@ -22,15 +22,28 @@ test("traceability guard: contracts map stable elements to intent and tests", as
     new URL("../../src/blender-bridge/ARCHITECTURE.md", import.meta.url),
     "utf8"
   );
+  const testsContract = await readFile(
+    new URL("../../tests/ARCHITECTURE.md", import.meta.url),
+    "utf8"
+  );
+  const agentFile = await readFile(
+    new URL("../../.github/agents/blender-avatar-controller.agent.md", import.meta.url),
+    "utf8"
+  );
 
   assert.match(overall, /TC-EX-001/);
   assert.match(overall, /TC-EX-002/);
   assert.match(overall, /TC-EX-003/);
+  assert.match(overall, /TC-EX-004/);
+  assert.match(overall, /scripts\/control-avatar\.mjs/);
   assert.match(overall, /assets\/sprite\.blend/);
   assert.match(runtime, /InteractionStateDrivenEmbodiment/);
+  assert.match(runtime, /UserSemanticAvatarControlInterface/);
   assert.match(mediator, /TruthfulEmbodimentPrinciple/);
   assert.match(bridge, /StructuredAvatarExecutionFeedback/);
   assert.match(bridge, /BlenderFeedback\.detail/);
   assert.match(bridge, /assets\/sprite\.blend/);
+  assert.match(testsContract, /user-semantic-avatar-request-embodiment/);
+  assert.match(agentFile, /control:avatar/);
   assert.ok(controlPoint.length > 0 && observationPoint.length > 0);
 });

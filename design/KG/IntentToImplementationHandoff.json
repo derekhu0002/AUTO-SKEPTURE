@@ -1,8 +1,8 @@
 {
   "stage": "intent-to-implementation",
-  "generatedAt": "2026-05-22",
+  "generatedAt": "2026-05-23",
   "sourceIntentGraphPath": "design/KG/SystemArchitecture.json",
-  "summary": "No intent graph redesign is required for the Sprite avatar iteration. The existing intent already fixes the semantic action boundary, truthful embodiment principle, graceful degradation requirement, mute override requirement, local Blender endpoint, and structured feedback observation boundary. The next stage should update implementation contracts to bind the current iteration to assets/sprite.blend and keep Sprite rig details isolated inside Blender-side implementation assets.",
+  "summary": "Intent now includes a second bounded control source for embodied interaction: a user semantic avatar control interface that submits natural-language requests as approved semantic avatar actions. The next stage must preserve the existing lifecycle-driven embodiment baseline while adding a concrete implementation contract, explicit testcase entrypoint, and guardrails for the new user-requested semantic control path.",
   "intentElementIds": [
     "1300",
     "1301",
@@ -12,8 +12,30 @@
     "1305",
     "1306",
     "1307",
+    "1308",
     "1309",
-    "1310"
+    "1310",
+    "1311",
+    "1312",
+    "1313"
+  ],
+  "relationshipIds": [
+    "2100",
+    "2101",
+    "2102",
+    "2103",
+    "2104",
+    "2105",
+    "2106",
+    "2107",
+    "2108",
+    "2109",
+    "2110",
+    "2111",
+    "2112",
+    "2113",
+    "2114",
+    "2115"
   ],
   "explicitTestcases": [
     {
@@ -48,6 +70,17 @@
       "acceptanceBoundary": "Keep graceful degradation, surfaced status, and neutral-idle recovery as the acceptance target. Sprite-specific binding failure must diagnose cleanly without weakening this baseline.",
       "requiredEntryKind": "explicit-testcase-entry",
       "implementationNotes": "Any fixed-scene or rig-selection logic introduced for Sprite must still fail safely and preserve the existing degradation baseline."
+    },
+    {
+      "name": "TC-EX-004 UserSemanticAvatarRequestEmbodiment",
+      "mountedElementId": "1300",
+      "mountedElementName": "EmbodiedAgentInteraction",
+      "type": "Acceptance Test",
+      "controlPoint": "UserSemanticAvatarControlInterface submits the canonical request 'show a thinking state', producing UserSemanticAvatarActionRequest that triggers AvatarEmbodimentMediator.",
+      "observationPoint": "Structured Blender feedback acknowledges delivery and reports a resulting thinking-compatible state transition for the targeted avatar channel.",
+      "acceptanceBoundary": "Keep the baseline focused on bounded natural-language semantic control resolving to an approved avatar action. Do not widen it into arbitrary language coverage, low-level Blender rig control, or host-channel-specific behavior.",
+      "requiredEntryKind": "explicit-testcase-entry",
+      "implementationNotes": "The implementation stage should materialize the current workspace channel through .github/agents/blender-avatar-controller.agent.md or an equivalent host-owned semantic control surface, while keeping the intent contract host-channel-agnostic."
     }
   ],
   "frozenBaselines": [
@@ -56,23 +89,29 @@
     "tests/explicit/response-start-embodiment.test.ts",
     "tests/explicit/response-complete-embodiment.test.ts",
     "tests/explicit/blender-disconnect-graceful-degradation.test.ts",
+    "tests/explicit/user-semantic-avatar-request-embodiment.test.ts",
     "scripts/run-tc-ex-001.mjs",
     "scripts/run-tc-ex-002.mjs",
-    "scripts/run-tc-ex-003.mjs"
+    "scripts/run-tc-ex-003.mjs",
+    "scripts/run-tc-ex-004.mjs"
   ],
   "requiredImplementationArtifacts": [
     "OVERALL_ARCHITECTURE.md",
+    "src/agent-runtime/ARCHITECTURE.md",
     "src/avatar-mediator/ARCHITECTURE.md",
     "src/blender-bridge/ARCHITECTURE.md",
     "tests/ARCHITECTURE.md",
+    ".github/agents/blender-avatar-controller.agent.md",
+    "tests/explicit/user-semantic-avatar-request-embodiment.test.ts",
+    "scripts/run-tc-ex-004.mjs",
     "design/KG/ImplementationToCodingHandoff.json"
   ],
   "notes": [
-    "Repository-confirmed conclusion: the Sprite iteration fits inside the existing semantic action vocabulary and intent constraints.",
-    "Repository-confirmed conclusion: the stable dependency direction remains src/agent-runtime -> src/avatar-mediator -> src/blender-bridge and should not change for Sprite-specific work.",
-    "User-confirmed decision: keep assets/sprite.blend, candidate Sprite rig selection, and raw Sprite action names out of intent architecture and inside implementation contracts and Blender-side assets only.",
-    "User-confirmed decision: keep explicit acceptance baselines semantic and vocabulary-bounded rather than Sprite-asset-specific.",
-    "User-confirmed decision: require richer structured feedback detail at implementation level so the selected Sprite preset or action can be diagnosed without changing the intent-side acceptance boundary.",
-    "Minimal assumption: implementation architecture will need to localize fixed-scene binding and richer observation detail under the blender-bridge-owned boundary before Coding/Repair begins."
+    "Repository-confirmed conclusion: the existing intent already constrains avatar behavior to semantic actions and forbids raw rig, bone, shape key, and general scene manipulation.",
+    "User-confirmed decision: user-requested semantic avatar control is now an intent-level control source rather than a purely implementation-level convenience path.",
+    "User-confirmed decision: the new control source remains bounded to approved semantic avatar actions and does not widen the product into general Blender automation.",
+    "User-confirmed decision: when explicit user semantic control and default lifecycle embodiment compete, the explicit user request gets single-action priority for the current control turn without replacing the default lifecycle baseline.",
+    "User-confirmed decision: intent freezes one canonical natural-language request, 'show a thinking state', as the stable success-path explicit testcase input, while broader language coverage stays in implementation-layer support tests.",
+    "Implementation-stage requirement: add a critical non-explicit guardrail that rejects unsupported low-level rig requests without silently coercing them into Blender automation."
   ]
 }

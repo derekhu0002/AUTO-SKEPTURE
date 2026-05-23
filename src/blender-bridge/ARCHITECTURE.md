@@ -45,6 +45,7 @@
 ## Test Ownership
 
 - Shares ownership of the explicit graceful degradation observation boundary.
+- Shares ownership of the explicit user semantic control observation boundary once a bounded semantic request reaches the bridge-owned execution path.
 - Owns the visual-path-first Sprite binding queue for the current iteration.
 - Covered by dependency and traceability guardrails.
 - Supported by expected-failing support tests for fixed-scene binding and richer Sprite observation detail.

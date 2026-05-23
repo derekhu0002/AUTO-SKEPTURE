@@ -1,1 +1,20 @@
-[]
+[
+	{
+		"name": "semantic control boundary guard",
+		"path": "tests/architecture/semantic-control-boundary-guard.test.ts",
+		"failureSignal": "scripts/control-avatar.mjs still resolves scripts/blender-adapter.mjs and launches the bridge adapter directly.",
+		"nextAction": "Route the semantic control command through the runtime/mediator boundary while preserving the current CLI and explicit acceptance contract."
+	},
+	{
+		"name": "sprite visual scene binding",
+		"path": "tests/support/sprite-visual-scene-binding.test.ts",
+		"failureSignal": "scripts/blender-visual-adapter.mjs still falls back to --factory-startup instead of defaulting to assets/sprite.blend.",
+		"nextAction": "Bind assets/sprite.blend as the default visual observation scene while preserving explicit override support."
+	},
+	{
+		"name": "sprite feedback detail contract",
+		"path": "tests/support/sprite-feedback-detail-contract.test.ts",
+		"failureSignal": "scripts/blender-visual-driver.py does not yet name the selected Sprite preset or action family in BlenderFeedback.detail.",
+		"nextAction": "Emit Sprite-specific preset or action-family detail through the existing detail field."
+	}
+]

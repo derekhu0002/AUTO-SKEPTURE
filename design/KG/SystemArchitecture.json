@@ -73,15 +73,15 @@
       "name": "EmbodiedAgentInteraction",
       "parent": "1207",
       "type": "ArchiMate_Capability",
-      "description": "The product capability that lets the VS Code agent express its live interaction state through a local anthropomorphic avatar.",
+      "description": "The product capability that lets the VS Code agent express its live interaction state and bounded user-requested semantic avatar feedback through a local anthropomorphic avatar.",
       "attributes": [
         {
           "name": "acceptance_outcomes",
-          "content": "The capability is limited to local-machine-first operation for the first baseline.\nAvatar behavior is presentation-layer feedback and must not replace the assistant's core task behavior.\nThe first baseline covers facial expression plus a small set of simple body gestures."
+          "content": "The capability is limited to local-machine-first operation for the first baseline.\nAvatar behavior is presentation-layer feedback and must not replace the assistant's core task behavior.\nThe first baseline covers facial expression plus a small set of simple body gestures.\nBounded user-requested semantic avatar actions are allowed in addition to the default lifecycle-driven embodiment flow."
         },
         {
           "name": "explicit_testcase_inventory",
-          "content": "TC-EX-001 ResponseStartEmbodiment -> baseline #file:tests/explicit/response-start-embodiment.test.ts ; executable #file:scripts/run-tc-ex-001.mjs\nTC-EX-002 ResponseCompleteEmbodiment -> baseline #file:tests/explicit/response-complete-embodiment.test.ts ; executable #file:scripts/run-tc-ex-002.mjs\nTC-EX-003 BlenderDisconnectGracefulDegradation -> baseline #file:tests/explicit/blender-disconnect-graceful-degradation.test.ts ; executable #file:scripts/run-tc-ex-003.mjs"
+          "content": "TC-EX-001 ResponseStartEmbodiment -> baseline #file:tests/explicit/response-start-embodiment.test.ts ; executable #file:scripts/run-tc-ex-001.mjs\nTC-EX-002 ResponseCompleteEmbodiment -> baseline #file:tests/explicit/response-complete-embodiment.test.ts ; executable #file:scripts/run-tc-ex-002.mjs\nTC-EX-003 BlenderDisconnectGracefulDegradation -> baseline #file:tests/explicit/blender-disconnect-graceful-degradation.test.ts ; executable #file:scripts/run-tc-ex-003.mjs\nTC-EX-004 UserSemanticAvatarRequestEmbodiment -> baseline #file:tests/explicit/user-semantic-avatar-request-embodiment.test.ts ; executable #file:scripts/run-tc-ex-004.mjs"
         }
       ],
       "subdiagram_views": [
@@ -118,6 +118,14 @@
           "Input": "Control point: AvatarEmbodimentMediator executes a semantic avatar action against LocalBlenderAvatarEndpoint during a disconnect or rejection condition. Involved elements: EmbodiedAgentInteraction, TruthfulEmbodimentPrinciple, GracefulAvatarDegradationConstraint, AvatarEmbodimentMediator, LocalBlenderAvatarEndpoint, StructuredAvatarExecutionFeedback.",
           "acceptanceCriteria": "scripts/run-tc-ex-003.mjs",
           "TestResults": "Observation point: surfaced degradation status and recovery semantics return toward neutral idle while the assistant's core response loop continues. Avatar degradation is surfaced explicitly rather than silently ignored. The recovery target is neutral idle semantics rather than an arbitrary lingering pose. Explicit acceptance baseline owned by EmbodiedAgentInteraction. Baseline evidence: #file:tests/explicit/blender-disconnect-graceful-degradation.test.ts. Executable entrypoint: #file:scripts/run-tc-ex-003.mjs"
+        },
+        {
+          "name": "TC-EX-004 UserSemanticAvatarRequestEmbodiment",
+          "description": "When the user submits a bounded natural-language semantic avatar request, the system should translate that request into an approved avatar action and execute it through the mediator. Control point: the user submits the canonical request 'show a thinking state' through UserSemanticAvatarControlInterface, which becomes a UserSemanticAvatarActionRequest that triggers the mediator. Observation point: Blender returns structured acknowledgement and a resulting thinking-compatible state transition for the targeted avatar channel.",
+          "type": "Acceptance Test",
+          "Input": "Control point: UserSemanticAvatarControlInterface submits the canonical request 'show a thinking state', producing UserSemanticAvatarActionRequest for AvatarEmbodimentMediator. Involved elements: EmbodiedAgentInteraction, ApprovedAvatarActionVocabulary, TruthfulEmbodimentPrinciple, UserDirectedSemanticEmbodiment, UserSemanticAvatarControlInterface, UserSemanticAvatarActionRequest, AvatarEmbodimentMediator, LocalBlenderAvatarEndpoint, StructuredAvatarExecutionFeedback.",
+          "acceptanceCriteria": "scripts/run-tc-ex-004.mjs",
+          "TestResults": "Observation point: structured Blender feedback confirms a thinking-compatible state transition and acknowledges delivery for the canonical semantic request. The selected action remains inside the approved semantic vocabulary and does not expose raw rig, bone, shape key, or scene manipulation semantics. Explicit acceptance baseline owned by EmbodiedAgentInteraction. Baseline evidence: #file:tests/explicit/user-semantic-avatar-request-embodiment.test.ts. Executable entrypoint: #file:scripts/run-tc-ex-004.mjs"
         }
       ]
     },
@@ -130,7 +138,7 @@
       "attributes": [
         {
           "name": "acceptance_outcomes",
-          "content": "Intent exposes only semantic avatar actions such as expression and gesture primitives.\nIntent does not baseline raw rig, bone, shape key, or scene manipulation.\nThreatening, sexualized, deceptive, or highly exaggerated affect is forbidden."
+          "content": "Intent exposes only semantic avatar actions such as expression and gesture primitives.\nIntent does not baseline raw rig, bone, shape key, or scene manipulation.\nThreatening, sexualized, deceptive, or highly exaggerated affect is forbidden.\nThe same bounded vocabulary applies to both lifecycle-driven embodiment and user-requested semantic avatar control."
         }
       ],
       "subdiagram_views": [
@@ -199,7 +207,7 @@
       "attributes": [
         {
           "name": "acceptance_outcomes",
-          "content": "Mute or disable suppresses Blender avatar actions only.\nThe assistant's task behavior and status reporting continue normally.\nManual puppeteering is out of the first baseline."
+          "content": "Mute or disable suppresses Blender avatar actions only.\nThe assistant's task behavior and status reporting continue normally.\nManual puppeteering and raw rig manipulation are out of the first baseline.\nBounded user semantic avatar requests remain allowed through the approved semantic control interface."
         }
       ],
       "subdiagram_views": [
@@ -218,11 +226,11 @@
       "name": "InteractionStateDrivenEmbodiment",
       "parent": "1208",
       "type": "ArchiMate_BusinessProcess",
-      "description": "The embodied experience is driven by the agent's own interaction lifecycle instead of manual scene direction.",
+      "description": "The default embodied experience is driven by the agent's own interaction lifecycle instead of manual scene direction.",
       "attributes": [
         {
           "name": "acceptance_outcomes",
-          "content": "The first baseline reacts to response-start and response-complete lifecycle states.\nThe newest relevant interaction state takes priority over stale animation.\nLip sync, voice, camera, lighting, and scene control are out of scope for the first baseline."
+          "content": "The first baseline reacts to response-start and response-complete lifecycle states by default.\nThe newest relevant interaction state takes priority over stale animation unless a user-requested semantic action is explicitly issued for the current action turn.\nLip sync, voice, camera, lighting, and scene control are out of scope for the first baseline."
         }
       ],
       "subdiagram_views": [
@@ -245,7 +253,7 @@
       "attributes": [
         {
           "name": "acceptance_outcomes",
-          "content": "The mediator selects actions from the approved semantic vocabulary only.\nThe mediator may trigger actions automatically during the agent response lifecycle.\nThe mediator remains separate from raw Blender rig internals at intent level."
+          "content": "The mediator selects actions from the approved semantic vocabulary only.\nThe mediator may trigger actions automatically during the agent response lifecycle and may also execute bounded user-requested semantic actions.\nA user-requested semantic action may take single-action priority over the default lifecycle-driven action for the current control turn.\nThe mediator remains separate from raw Blender rig internals at intent level."
         }
       ],
       "subdiagram_views": [
@@ -282,6 +290,75 @@
       "parent": "1209",
       "type": "ArchiMate_ApplicationInterface",
       "description": "The user-visible control that suppresses avatar actions without suppressing the assistant itself.",
+      "subdiagram_views": [
+        {
+          "view_id": "161",
+          "view_name": "ApplicationLayer"
+        },
+        {
+          "view_id": "164",
+          "view_name": "EmbodiedAgentInteractionLoop"
+        }
+      ]
+    },
+    {
+      "id": "1311",
+      "name": "UserDirectedSemanticEmbodiment",
+      "parent": "1208",
+      "type": "ArchiMate_BusinessProcess",
+      "description": "A bounded user-directed embodiment flow that lets the user request approved semantic avatar actions without exposing low-level Blender control.",
+      "attributes": [
+        {
+          "name": "acceptance_outcomes",
+          "content": "The user can request only approved semantic avatar actions.\nA user-requested semantic action applies to the current requested control turn rather than permanently replacing lifecycle-driven embodiment.\nRaw rig, bone, shape key, and general scene automation remain out of scope."
+        }
+      ],
+      "subdiagram_views": [
+        {
+          "view_id": "160",
+          "view_name": "BusinessLayer"
+        },
+        {
+          "view_id": "164",
+          "view_name": "EmbodiedAgentInteractionLoop"
+        }
+      ]
+    },
+    {
+      "id": "1312",
+      "name": "UserSemanticAvatarControlInterface",
+      "parent": "1209",
+      "type": "ArchiMate_ApplicationInterface",
+      "description": "The user-visible semantic control interface that accepts natural-language avatar requests and submits them as bounded semantic actions.",
+      "attributes": [
+        {
+          "name": "acceptance_outcomes",
+          "content": "The interface accepts natural-language semantic requests rather than low-level Blender commands.\nThe interface must keep requests within the approved semantic vocabulary.\nThe interface does not baseline a specific host channel such as a single custom-agent implementation."
+        }
+      ],
+      "subdiagram_views": [
+        {
+          "view_id": "161",
+          "view_name": "ApplicationLayer"
+        },
+        {
+          "view_id": "164",
+          "view_name": "EmbodiedAgentInteractionLoop"
+        }
+      ]
+    },
+    {
+      "id": "1313",
+      "name": "UserSemanticAvatarActionRequest",
+      "parent": "1209",
+      "type": "ArchiMate_ApplicationEvent",
+      "description": "The bounded semantic avatar action request produced from a user natural-language request after it has been reduced to the approved semantic vocabulary.",
+      "attributes": [
+        {
+          "name": "acceptance_outcomes",
+          "content": "The event carries only approved semantic action intent.\nThe event excludes raw rig, bone, shape key, and scene manipulation payloads.\nThe canonical first-baseline request 'show a thinking state' must resolve to a thinking-compatible action."
+        }
+      ],
       "subdiagram_views": [
         {
           "view_id": "161",
@@ -461,6 +538,61 @@
       "target_id": "1306",
       "source_name": "AvatarMuteOverride",
       "target_name": "AvatarEmbodimentMediator"
+    },
+    {
+      "id": "2111",
+      "statement": "UserDirectedSemanticEmbodiment realizes EmbodiedAgentInteraction.",
+      "name": "realizes_user_directed_embodiment",
+      "description": "The bounded user-directed semantic embodiment flow realizes the embodied interaction capability alongside the default lifecycle flow.",
+      "super_type": "ArchiMate_Association",
+      "source_id": "1311",
+      "target_id": "1300",
+      "source_name": "UserDirectedSemanticEmbodiment",
+      "target_name": "EmbodiedAgentInteraction"
+    },
+    {
+      "id": "2112",
+      "statement": "UserAvatarOverrideConstraint influences UserSemanticAvatarControlInterface.",
+      "name": "bounds_user_semantic_control",
+      "description": "The user avatar override constraint keeps the semantic control interface bounded to avatar-only semantics without turning it into manual puppeteering.",
+      "super_type": "ArchiMate_Influence",
+      "source_id": "1304",
+      "target_id": "1312",
+      "source_name": "UserAvatarOverrideConstraint",
+      "target_name": "UserSemanticAvatarControlInterface"
+    },
+    {
+      "id": "2113",
+      "statement": "UserSemanticAvatarControlInterface associates with UserSemanticAvatarActionRequest.",
+      "name": "submits_user_semantic_request",
+      "description": "The semantic control interface submits bounded user avatar requests as semantic action events.",
+      "super_type": "ArchiMate_Association",
+      "source_id": "1312",
+      "target_id": "1313",
+      "source_name": "UserSemanticAvatarControlInterface",
+      "target_name": "UserSemanticAvatarActionRequest"
+    },
+    {
+      "id": "2114",
+      "statement": "UserSemanticAvatarActionRequest triggers AvatarEmbodimentMediator.",
+      "name": "user_request_triggers_mediator",
+      "description": "A bounded user semantic avatar request triggers the mediator to execute an approved semantic action.",
+      "super_type": "ArchiMate_Triggering",
+      "source_id": "1313",
+      "target_id": "1306",
+      "source_name": "UserSemanticAvatarActionRequest",
+      "target_name": "AvatarEmbodimentMediator"
+    },
+    {
+      "id": "2115",
+      "statement": "ApprovedAvatarActionVocabulary bounds UserSemanticAvatarActionRequest.",
+      "name": "bounds_user_semantic_requests",
+      "description": "The approved avatar vocabulary constrains user-submitted semantic requests to the same bounded action set used by the mediator.",
+      "super_type": "ArchiMate_Association",
+      "source_id": "1301",
+      "target_id": "1313",
+      "source_name": "ApprovedAvatarActionVocabulary",
+      "target_name": "UserSemanticAvatarActionRequest"
     }
   ],
   "views": [
@@ -490,10 +622,12 @@
       "parent_element_id": "1208",
       "parent_element_name": "BusinessLayer",
       "included_elements": [
-        "1305"
+        "1305",
+        "1311"
       ],
       "included_relationships": [
-        "2101"
+        "2101",
+        "2111"
       ]
     },
     {
@@ -504,11 +638,17 @@
       "included_elements": [
         "1306",
         "1307",
-        "1308"
+        "1308",
+        "1312",
+        "1313"
       ],
       "included_relationships": [
         "2106",
-        "2110"
+        "2110",
+        "2112",
+        "2113",
+        "2114",
+        "2115"
       ]
     },
     {
@@ -545,6 +685,9 @@
         "1306",
         "1307",
         "1308",
+        "1311",
+        "1312",
+        "1313",
         "1309",
         "1310"
       ],
@@ -559,7 +702,12 @@
         "2107",
         "2108",
         "2109",
-        "2110"
+        "2110",
+        "2111",
+        "2112",
+        "2113",
+        "2114",
+        "2115"
       ]
     },
     {
@@ -580,6 +728,9 @@
         "1306",
         "1307",
         "1308",
+        "1311",
+        "1312",
+        "1313",
         "1309",
         "1310"
       ],
@@ -594,7 +745,12 @@
         "2107",
         "2108",
         "2109",
-        "2110"
+        "2110",
+        "2111",
+        "2112",
+        "2113",
+        "2114",
+        "2115"
       ]
     }
   ]

@@ -179,6 +179,7 @@ When designing or changing implementation architecture:
 
 
 ## Session Memory
+
 ### Current Stage
 Implementation Design
 

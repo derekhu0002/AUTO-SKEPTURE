@@ -7,6 +7,7 @@
 ## Responsibility
 
 - Convert runtime lifecycle state into truthful semantic avatar actions.
+- Execute approved user-requested semantic avatar actions after the host boundary reduces natural-language requests to the bounded semantic vocabulary.
 - Enforce mute/disable, graceful degradation, and preemption policy.
 - Isolate agent semantics from Blender transport details.
 - Preserve the existing bridge feedback shape and treat Sprite preset names as opaque bridge-owned detail.
@@ -37,6 +38,6 @@
 
 ## Test Ownership
 
-- Owns the core observation boundary for all three explicit testcases.
+- Owns the core observation boundary for all four explicit testcases.
 - Owns critical guardrails for mute/disable, graceful degradation, and preemption policy.
 - Does not own concrete Sprite preset-selection assertions; those stay below the mediator boundary.

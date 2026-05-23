@@ -7,6 +7,9 @@
     "build": "tsc -p tsconfig.json",
     "test": "tsx --test tests/**/*.test.ts",
     "test:real": "node scripts/run-real-tests.mjs",
+    "validate:handoff:intent": "node scripts/validate-handoff.mjs intent",
+    "validate:handoff:implementation": "node scripts/validate-handoff.mjs implementation",
+    "control:avatar": "node scripts/control-avatar.mjs",
     "observe:blender": "node scripts/observe-in-blender.mjs",
     "inspect:blender": "node scripts/inspect-blend.mjs"
   },
